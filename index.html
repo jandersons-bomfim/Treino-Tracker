@@ -106,7 +106,7 @@
   .ex-card:first-of-type{border-top:none;}
   .ex-card-head{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;}
   .ex-card-head .ex-name{font-size:13.5px;font-weight:500;flex:1;}
-  .ex-name .main-flag{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--orange);margin-right:6px;vertical-align:middle;}
+  .ex-name .main-flag{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ink-muted);margin-right:6px;vertical-align:middle;}
   .ex-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
   .ex-target-inline{font-size:11px;color:var(--ink-muted);}
   .ex-summary-chip{font-size:11px;color:var(--green);font-weight:600;min-height:14px;}
@@ -114,17 +114,29 @@
   .ex-card-body{margin-top:10px;}
   .ex-note-line{font-size:11px;color:var(--ink-faint);margin-bottom:10px;}
 
-  .set-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid var(--line);flex-wrap:wrap;}
+  .set-row{padding:8px 0;border-top:1px solid var(--line);}
   .set-row:first-of-type{border-top:none;}
-  .set-num{font-size:11px;color:var(--ink-faint);width:58px;flex-shrink:0;}
+  .set-row-top{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .set-num{font-size:11px;color:var(--ink-faint);flex-shrink:0;}
   .set-type-toggle{font-size:10px;font-weight:600;padding:9px 8px;border-radius:10px;border:1px solid var(--line);cursor:pointer;background:var(--paper);color:var(--ink-muted);flex-shrink:0;width:58px;min-height:36px;}
   .set-type-toggle.aquecimento{background:var(--blue-soft);color:var(--blue);border-color:var(--blue);}
   .set-type-toggle.trabalho{background:var(--orange-soft);color:var(--orange);border-color:var(--orange);}
-  .set-row input{flex:1;min-width:50px;padding:6px 4px;border:1px solid var(--line);border-radius:2px;font-size:13px;text-align:center;background:var(--paper);color:var(--ink);font-family:'Inter';}
-  .set-rm-btn{background:none;border:1px solid var(--line);color:var(--red);border-radius:2px;width:40px;height:40px;cursor:pointer;font-size:16px;flex-shrink:0;}
-  .add-set-btn{margin-top:8px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:14px;border:1px dashed var(--ink-faint);background:none;color:var(--ink-muted);cursor:pointer;}
+  .set-row-bottom{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .stepper{display:flex;align-items:center;gap:0;flex:1;min-width:110px;}
+  .stepper button{width:34px;height:36px;flex-shrink:0;border:1px solid var(--line);background:var(--paper);color:var(--ink-muted);font-size:16px;cursor:pointer;}
+  .stepper button:first-child{border-radius:4px 0 0 4px;}
+  .stepper button:last-child{border-radius:0 4px 4px 0;}
+  .stepper input{flex:1;min-width:0;height:36px;padding:0 2px;border:1px solid var(--line);border-left:none;border-right:none;font-size:13px;text-align:center;background:var(--paper);color:var(--ink);font-family:'Inter';}
+  .set-row input.plain{flex:1;min-width:60px;height:36px;padding:0 6px;border:1px solid var(--line);border-radius:4px;font-size:13px;text-align:center;background:var(--paper);color:var(--ink);font-family:'Inter';}
+  .set-row input.rpe-input{max-width:56px;flex:0 0 56px;}
+  .set-rm-btn{background:none;border:1px solid var(--line);color:var(--red);border-radius:2px;width:40px;height:40px;cursor:pointer;font-size:16px;flex-shrink:0;margin-left:auto;}
+  .add-set-btn{margin-top:8px;margin-right:6px;font-size:12px;font-weight:600;padding:8px 12px;border-radius:14px;border:1px dashed var(--ink-faint);background:none;color:var(--ink-muted);cursor:pointer;}
   .obs-input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:2px;font-size:12px;margin-top:10px;background:var(--paper);color:var(--ink);font-family:'Inter';}
-  .e1rm-note{font-size:11px;color:var(--orange);margin-top:8px;font-weight:600;}
+  .e1rm-note{font-size:11px;color:var(--ink);margin-top:8px;font-weight:700;}
+  .delta-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-top:2px;}
+  .delta-badge.up{background:var(--green-soft);color:var(--green);}
+  .delta-badge.down{background:#F8DCD6;color:var(--red);}
+  .delta-badge.neutral{background:var(--line);color:var(--ink-muted);}
 
   .ex-edit-row{display:flex;gap:6px;align-items:center;padding:8px 0;border-top:1px solid var(--line);}
   .ex-edit-row:first-of-type{border-top:none;}
@@ -195,13 +207,25 @@
 
   @media (max-width:520px){
     .hero-week{font-size:44px;}
+    .day-chip .dfull{display:none;}
+    .day-chip .dshort{display:block;}
+    .totals-grid{gap:6px;}
+    .totals-grid .tval{font-size:19px;}
+    .program-switcher{max-width:55vw;}
+    .rest-timer-widget, .undo-toast{left:10px;right:10px;bottom:10px;padding:10px 12px;}
+  }
+  @media (min-width:521px){
+    .day-chip .dshort{display:none;}
   }
 
   /* ---- Theme toggle & program switcher ---- */
   .icon-btn{border:1px solid var(--line);background:var(--paper-raised);color:var(--ink);width:40px;height:40px;border-radius:var(--radius);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
   .icon-btn:hover{border-color:var(--ink-faint);}
   .top-controls{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;}
-  .program-switcher{font-size:12.5px;color:var(--ink-muted);background:none;border:none;cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:2px;}
+  .program-switcher{font-size:12.5px;color:var(--ink-muted);background:none;border:none;cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:2px;max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;}
+  .track-toggle-row{display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-top:14px;}
+  .track-toggle-row .compact-label{font-size:13px;color:var(--ink-muted);}
+  .track-toggle-row .toggle-chevron{font-size:11px;color:var(--ink-faint);}
   .program-panel{background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:16px;}
   .program-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--line);gap:8px;}
   .program-row:first-of-type{border-top:none;}
@@ -363,6 +387,7 @@ let theme = 'light';
 let showProgramPanel = false;
 let dismissedReminderKey = null;
 let pendingUndo = null; // {exId, exercise, timeoutId}
+let trackExpanded = false;
 
 /* ============================= STORAGE (IndexedDB) ============================= */
 
@@ -700,11 +725,14 @@ function targetFor(ex, wk){
   return {sets: ex.baseSets, reps: ex.baseReps, note:''};
 }
 
-function cardioTarget(cardio, wk){
+function cardioTarget(cardio, wk, dayKey){
   if(cardio.isLongao){
-    const km = LONGAO_KM[wk.n-1];
-    return `${km} km — ritmo leve e constante`;
+    const overrideArr = dayKey && customTemplates[dayKey] && customTemplates[dayKey].longaoKmOverride;
+    const val = overrideArr && overrideArr[wk.n-1]!=null && overrideArr[wk.n-1]!=='' ? overrideArr[wk.n-1] : LONGAO_KM[wk.n-1];
+    return `${val} km — ritmo leve e constante`;
   }
+  const override = dayKey && customTemplates[dayKey] && customTemplates[dayKey].cardioOverride;
+  if(override && override[wk.phaseKey]) return override[wk.phaseKey];
   return cardio.target[wk.phaseKey];
 }
 
@@ -859,6 +887,11 @@ function renderHero(wk){
         <button id="next-week" ${wk.n>=12?'disabled':''}>›</button>
       </div>
     </div>
+    <div class="track-toggle-row" id="track-toggle-row">
+      <span class="compact-label">${trackExpanded ? 'Ocultar linha do tempo' : 'Ver linha do tempo das 12 semanas'}</span>
+      <span class="toggle-chevron">${trackExpanded ? '▴' : '▾'}</span>
+    </div>
+    ${trackExpanded ? `
     <div class="track">
       ${Array.from({length:12}).map((_,i)=>{
         const n=i+1; const w=weekInfo(n);
@@ -867,6 +900,7 @@ function renderHero(wk){
       }).join('')}
     </div>
     <div class="track-label"><span>INTRODUÇÃO</span><span>VOLUME</span><span>INTENSIDADE</span></div>
+    ` : ''}
   </div>`;
 }
 
@@ -875,13 +909,15 @@ function renderTabs(){
   return `<div class="tabs">${tabs.map(([k,l])=>`<button class="tab ${activeTab===k?'active':''}" data-tab="${k}">${l}</button>`).join('')}</div>`;
 }
 
+const SHORT_DAY = {seg:'SEG', ter:'TER', qua:'QUA', qui:'QUI', sex:'SEX', sab:'SÁB', dom:'DOM'};
+
 function renderSprint(wk){
   const day = DAY_TEMPLATES[activeDayIdx];
   if(!editingDay) setTimeout(()=>refreshPRBadges(day, wk), 0);
   return `
   <div class="day-strip">
     ${DAY_TEMPLATES.map((d,i)=>`<div class="day-chip ${i===activeDayIdx?'active':''}" data-day="${i}">
-        <div class="dlabel">${d.label}</div>
+        <div class="dlabel"><span class="dfull">${d.label}</span><span class="dshort">${SHORT_DAY[d.key]}</span></div>
         <div class="dfocus">${d.focus}</div>
       </div>`).join('')}
   </div>
@@ -893,7 +929,7 @@ function renderSprint(wk){
     ${editingDay ? renderExerciseEdit(day) : `
       ${renderVolumeDropdown(day, wk)}
       ${renderExerciseTable(day, wk)}
-      ${day.cardio ? renderCardio(day.cardio, wk) : ''}
+      ${day.cardio ? renderCardio(day.cardio, wk, day.key) : ''}
       ${renderTotals(day, wk)}
       ${day.key==='dom' ? renderRetro() : ''}
       <button type="button" class="share-btn" id="share-day-btn">Compartilhar treino</button>
@@ -916,6 +952,19 @@ function renderVolumeDropdown(day, wk){
   </details>`;
 }
 
+function deltaBadgeHtml(ex, wk, curE1){
+  if(ex.isTime || !curE1) return '';
+  const prevLog = prevLogFor(ex.id);
+  const prevBest = prevLog ? bestWorkSet(prevLog.sets) : null;
+  const prevE1 = prevBest ? epley1RM(prevBest.carga, prevBest.reps) : null;
+  if(!prevE1) return '';
+  const diff = Math.round((curE1-prevE1)*10)/10;
+  if(diff===0) return `<span class="delta-badge neutral">= e1RM (sem. ${wk.n-1})</span>`;
+  const cls = diff>0 ? 'up' : 'down';
+  const sign = diff>0 ? '+' : '';
+  return `<span class="delta-badge ${cls}">${sign}${diff}kg vs sem. ${wk.n-1}</span>`;
+}
+
 function renderExerciseTable(day, wk){
   const exercises = getDayExercises(day, wk);
   if(exercises.length===0) return '';
@@ -932,15 +981,33 @@ function renderExerciseTable(day, wk){
     const curE1 = best ? epley1RM(best.carga, best.reps) : null;
     const chip = summaryChipFor(log);
     const expanded = !!expandedEx[ex.id];
+    const delta = deltaBadgeHtml(ex, wk, curE1);
 
     const setsHtml = log.sets.map((s,i)=>`
       <div class="set-row">
-        <div class="set-num">Série ${String(i+1).padStart(2,'0')}</div>
-        <button type="button" class="set-type-toggle ${s.tipo||'trabalho'}" data-toggletype="${ex.id}:${i}">${(s.tipo||'trabalho')==='aquecimento'?'Aquec.':'Trab.'}</button>
-        <input type="text" placeholder="${ex.isTime?'tempo':'kg'}" value="${s.carga||''}" data-setfield="carga" data-setex="${ex.id}" data-setidx="${i}">
-        <input type="text" placeholder="reps" value="${s.reps||''}" data-setfield="reps" data-setex="${ex.id}" data-setidx="${i}">
-        ${!ex.isTime ? `<input type="text" placeholder="RPE" value="${s.rpe||''}" data-setfield="rpe" data-setex="${ex.id}" data-setidx="${i}">` : ''}
-        <button type="button" class="set-rm-btn" data-removeset="${ex.id}:${i}" title="Remover série">×</button>
+        <div class="set-row-top">
+          <div class="set-num">Série ${String(i+1).padStart(2,'0')}</div>
+          <button type="button" class="set-type-toggle ${s.tipo||'trabalho'}" data-toggletype="${ex.id}:${i}">${(s.tipo||'trabalho')==='aquecimento'?'Aquec.':'Trab.'}</button>
+          <button type="button" class="set-rm-btn" data-removeset="${ex.id}:${i}" title="Remover série">×</button>
+        </div>
+        <div class="set-row-bottom">
+          ${ex.isTime ? `
+            <input type="text" class="plain" placeholder="tempo" value="${s.carga||''}" data-setfield="carga" data-setex="${ex.id}" data-setidx="${i}">
+            <input type="text" inputmode="numeric" class="plain" placeholder="reps" value="${s.reps||''}" data-setfield="reps" data-setex="${ex.id}" data-setidx="${i}">
+          ` : `
+            <div class="stepper">
+              <button type="button" data-step="carga:-2.5:${ex.id}:${i}">−</button>
+              <input type="text" inputmode="decimal" placeholder="kg" value="${s.carga||''}" data-setfield="carga" data-setex="${ex.id}" data-setidx="${i}">
+              <button type="button" data-step="carga:2.5:${ex.id}:${i}">+</button>
+            </div>
+            <div class="stepper">
+              <button type="button" data-step="reps:-1:${ex.id}:${i}">−</button>
+              <input type="text" inputmode="numeric" placeholder="reps" value="${s.reps||''}" data-setfield="reps" data-setex="${ex.id}" data-setidx="${i}">
+              <button type="button" data-step="reps:1:${ex.id}:${i}">+</button>
+            </div>
+            <input type="text" inputmode="decimal" class="plain rpe-input" placeholder="RPE" value="${s.rpe||''}" data-setfield="rpe" data-setex="${ex.id}" data-setidx="${i}">
+          `}
+        </div>
       </div>`).join('');
 
     rows += `
@@ -950,6 +1017,7 @@ function renderExerciseTable(day, wk){
           <div class="ex-meta">
             <div class="ex-target-inline">${t.sets}× ${t.reps}</div>
             <div class="ex-summary-chip" id="chip-${ex.id}">${chip}</div>
+            ${delta}
           </div>
           <span class="chevron">${expanded?'▴':'▾'}</span>
         </div>
@@ -957,6 +1025,7 @@ function renderExerciseTable(day, wk){
           <div class="ex-note-line">${t.note}${prevTxt?' · '+prevTxt:''}</div>
           ${setsHtml}
           <button type="button" class="add-set-btn" data-addset="${ex.id}">+ Adicionar série</button>
+          ${log.sets.length>0 ? `<button type="button" class="add-set-btn" data-dupset="${ex.id}">⧉ Duplicar última</button>` : ''}
           <div class="rest-btn-row">
             <button type="button" data-resttimer="60">⏱ 60s</button>
             <button type="button" data-resttimer="90">⏱ 90s</button>
@@ -975,7 +1044,7 @@ function renderExerciseEdit(day){
   const rows = exercises.map(ex=>`
     <div class="ex-edit-row">
       <input type="text" class="ex-edit-name" data-editfield="name" data-editex="${ex.id}" value="${ex.name}">
-      <input type="text" class="small" data-editfield="baseSets" data-editex="${ex.id}" value="${ex.baseSets}" placeholder="séries">
+      <input type="text" inputmode="numeric" class="small" data-editfield="baseSets" data-editex="${ex.id}" value="${ex.baseSets}" placeholder="séries">
       <input type="text" class="small" data-editfield="baseReps" data-editex="${ex.id}" value="${ex.baseReps}" placeholder="reps">
       <button class="rm-btn" data-removeex="${ex.id}" title="Remover">×</button>
     </div>`).join('');
@@ -993,12 +1062,33 @@ function renderExerciseEdit(day){
     <div>${rows || '<div class="chart-empty">Nenhum exercício neste treino.</div>'}</div>
     <div class="add-ex-form">
       <input type="text" id="new-ex-name" placeholder="Nome do novo exercício">
-      <input type="text" id="new-ex-sets" placeholder="séries" style="width:60px">
+      <input type="text" inputmode="numeric" id="new-ex-sets" placeholder="séries" style="width:60px">
       <input type="text" id="new-ex-reps" placeholder="reps" style="width:70px">
       <button class="add-ex-btn" id="add-ex-btn">+ Adicionar</button>
     </div>
     ${hasCustom ? `<button class="restore-btn" id="restore-day-btn">Restaurar treino padrão nesta seleção</button>` : ''}
+    ${renderCardioEdit(day)}
   `;
+}
+
+function renderCardioEdit(day){
+  if(!day.cardio) return '';
+  if(day.cardio.isLongao){
+    const overrideArr = (customTemplates[day.key] && customTemplates[day.key].longaoKmOverride) || LONGAO_KM.slice();
+    const rows = overrideArr.map((km,i)=>`
+      <div class="ex-edit-row">
+        <span style="width:80px;font-size:12px;color:var(--ink-muted);">Semana ${i+1}</span>
+        <input type="text" inputmode="decimal" class="small" data-longaoweek="${i}" value="${km}" style="max-width:90px;">
+      </div>`).join('');
+    return `<div class="block-label">Longão — km alvo por semana (edite livremente pra sua rotina)</div>${rows}`;
+  }
+  const ov = (customTemplates[day.key] && customTemplates[day.key].cardioOverride) || day.cardio.target;
+  return `
+    <div class="block-label">${day.cardio.label} — meta por fase (vale para as 12 semanas)</div>
+    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Introdução</span><input type="text" class="ex-edit-name" data-cardiophase="adaptacao" value="${ov.adaptacao||''}"></div>
+    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Volume</span><input type="text" class="ex-edit-name" data-cardiophase="volume" value="${ov.volume||''}"></div>
+    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Intensidade</span><input type="text" class="ex-edit-name" data-cardiophase="forca" value="${ov.forca||''}"></div>
+    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Deload</span><input type="text" class="ex-edit-name" data-cardiophase="deload" value="${ov.deload||''}"></div>`;
 }
 
 function renderTotals(day, wk){
@@ -1016,16 +1106,16 @@ function renderTotals(day, wk){
   </div>`;
 }
 
-function renderCardio(cardio, wk){
+function renderCardio(cardio, wk, dayKey){
   const log = weekData.cardio[cardio.id] || {};
   if(cardio.isLongao){
     return `
     <div class="cardio-card">
       <div class="ctitle">${cardio.label}</div>
-      <div class="ctarget">Alvo: ${cardioTarget(cardio, wk)}</div>
+      <div class="ctarget">Alvo: ${cardioTarget(cardio, wk, dayKey)}</div>
       <div class="cardio-inputs">
-        <div><label>Km feitos</label><input type="text" data-cardio="${cardio.id}" data-cfield="km" value="${log.km||''}" placeholder="km"></div>
-        <div><label>Tempo</label><input type="text" data-cardio="${cardio.id}" data-cfield="tempo" value="${log.tempo||''}" placeholder="min"></div>
+        <div><label>Km feitos</label><input type="text" inputmode="decimal" data-cardio="${cardio.id}" data-cfield="km" value="${log.km||''}" placeholder="km"></div>
+        <div><label>Tempo</label><input type="text" inputmode="decimal" data-cardio="${cardio.id}" data-cfield="tempo" value="${log.tempo||''}" placeholder="min"></div>
         <div><label>Sensação</label><input type="text" data-cardio="${cardio.id}" data-cfield="sensacao" value="${log.sensacao||''}" placeholder="leve/médio/pesado"></div>
       </div>
     </div>`;
@@ -1033,7 +1123,7 @@ function renderCardio(cardio, wk){
   return `
     <div class="cardio-card">
       <div class="ctitle">${cardio.label}</div>
-      <div class="ctarget">Alvo: ${cardioTarget(cardio, wk)}</div>
+      <div class="ctarget">Alvo: ${cardioTarget(cardio, wk, dayKey)}</div>
       <div class="cardio-inputs">
         <div><label>Feito</label><input type="text" data-cardio="${cardio.id}" data-cfield="feito" value="${log.feito||''}" placeholder="ex: completo"></div>
         <div><label>Sensação</label><input type="text" data-cardio="${cardio.id}" data-cfield="sensacao" value="${log.sensacao||''}" placeholder="leve/médio/pesado"></div>
@@ -1204,14 +1294,16 @@ async function exportData(){
 
 function renderPlano(wk){
   let rows = '';
+  const overrideArr = customTemplates['dom'] && customTemplates['dom'].longaoKmOverride;
   for(let n=1;n<=12;n++){
     const w = weekInfo(n);
+    const km = (overrideArr && overrideArr[n-1]!=null && overrideArr[n-1]!=='') ? overrideArr[n-1] : LONGAO_KM[n-1];
     rows += `<tr class="${n===wk.n?'current':''}">
       <td class="num">${n}</td>
       <td>${w.meso.label}</td>
       <td>${w.isDeload?'Deload':'Estímulo'}</td>
       <td>${w.isDeload?'-20% carga · -40% volume':w.meso.note}</td>
-      <td class="num">${LONGAO_KM[n-1]} km</td>
+      <td class="num">${km} km</td>
     </tr>`;
   }
   return `
@@ -1418,6 +1510,37 @@ function attachEvents(wk){
       render();
     });
   });
+  document.querySelectorAll('[data-dupset]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const exId = btn.dataset.dupset;
+      const log = weekData.logs[exId];
+      if(!log || !Array.isArray(log.sets) || !log.sets.length) return;
+      const last = log.sets[log.sets.length-1];
+      log.sets.push(Object.assign({}, last));
+      expandedEx[exId] = true;
+      scheduleSave();
+      render();
+    });
+  });
+  document.querySelectorAll('[data-step]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const [field, deltaStr, exId, idxStr] = btn.dataset.step.split(':');
+      const idx = parseInt(idxStr);
+      const delta = parseFloat(deltaStr);
+      if(!weekData.logs[exId]) weekData.logs[exId] = {sets:[], obs:''};
+      if(!weekData.logs[exId].sets[idx]) weekData.logs[exId].sets[idx] = {tipo:'trabalho'};
+      const cur = parseFloat(weekData.logs[exId].sets[idx][field]) || 0;
+      let next = cur + delta;
+      next = field==='reps' ? Math.max(0, Math.round(next)) : Math.max(0, Math.round(next*10)/10);
+      weekData.logs[exId].sets[idx][field] = String(next);
+      scheduleSave();
+      updateE1RMDisplay(exId);
+      updateSummaryChip(exId);
+      updateTotalsDisplay();
+      const inp = document.querySelector(`input[data-setex="${exId}"][data-setidx="${idx}"][data-setfield="${field}"]`);
+      if(inp) inp.value = weekData.logs[exId].sets[idx][field];
+    });
+  });
   document.querySelectorAll('[data-removeset]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const [exId, idxStr] = btn.dataset.removeset.split(':');
@@ -1484,6 +1607,24 @@ function attachEvents(wk){
     const day = DAY_TEMPLATES[activeDayIdx];
     if(confirm('Restaurar este treino para o padrão original nesta seleção de semanas?')) restoreDay(day, editScope);
   });
+  document.querySelectorAll('[data-cardiophase]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const day = DAY_TEMPLATES[activeDayIdx];
+      if(!customTemplates[day.key]) customTemplates[day.key] = {};
+      if(!customTemplates[day.key].cardioOverride) customTemplates[day.key].cardioOverride = Object.assign({}, day.cardio.target);
+      customTemplates[day.key].cardioOverride[inp.dataset.cardiophase] = inp.value;
+      saveTemplates();
+    });
+  });
+  document.querySelectorAll('[data-longaoweek]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const day = DAY_TEMPLATES[activeDayIdx];
+      if(!customTemplates[day.key]) customTemplates[day.key] = {};
+      if(!customTemplates[day.key].longaoKmOverride) customTemplates[day.key].longaoKmOverride = LONGAO_KM.slice();
+      customTemplates[day.key].longaoKmOverride[parseInt(inp.dataset.longaoweek)] = inp.value;
+      saveTemplates();
+    });
+  });
   document.querySelectorAll('[data-cardio]').forEach(inp=>{
     inp.addEventListener('input', ()=>{
       const id = inp.dataset.cardio, field = inp.dataset.cfield;
@@ -1491,6 +1632,10 @@ function attachEvents(wk){
       weekData.cardio[id][field] = inp.value;
       scheduleSave();
     });
+  });
+  document.getElementById('track-toggle-row')?.addEventListener('click', ()=>{
+    trackExpanded = !trackExpanded;
+    render();
   });
   document.getElementById('theme-toggle-btn')?.addEventListener('click', toggleTheme);
   document.getElementById('program-switcher-btn')?.addEventListener('click', ()=>{
