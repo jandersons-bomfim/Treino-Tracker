@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const SHELL_CACHE = 'treino-shell-' + CACHE_VERSION;
 const FONT_CACHE = 'treino-fonts-' + CACHE_VERSION;
 
@@ -48,17 +48,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App shell: cache-first, falling back to network, so the app opens offline
+  // App shell: network-first, so updates you deploy show up immediately.
+  // Falls back to the cached copy only when there's no network (offline use at the gym).
   if (event.request.mode === 'navigate' || SHELL_FILES.some(f => event.request.url.endsWith(f.replace('./','')))) {
     event.respondWith(
-      caches.match(event.request).then(cached => {
-        return cached || fetch(event.request).then(resp => {
-          if (resp.ok) {
-            caches.open(SHELL_CACHE).then(cache => cache.put(event.request, resp.clone()));
-          }
-          return resp;
-        }).catch(() => caches.match('./index.html'));
-      })
+      fetch(event.request).then(resp => {
+        if (resp.ok) {
+          caches.open(SHELL_CACHE).then(cache => cache.put(event.request, resp.clone()));
+        }
+        return resp;
+      }).catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html')))
     );
     return;
   }
