@@ -14,6 +14,7 @@
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
   :root{
     --paper:#EEF0EA;
@@ -385,6 +386,7 @@ let expandedEx = {};
 let saveTimer = null;
 let theme = 'light';
 let showProgramPanel = false;
+let showAuthPanel = false;
 let dismissedReminderKey = null;
 let pendingUndo = null; // {exId, exercise, timeoutId}
 let trackExpanded = false;
@@ -407,7 +409,7 @@ function openDB(){
   });
   return dbPromise;
 }
-async function kvGet(key){
+async function idbGetRaw(key){
   if(memoryFallback) return memoryFallback.has(key) ? memoryFallback.get(key) : null;
   try{
     const db = await openDB();
@@ -422,7 +424,7 @@ async function kvGet(key){
     return memoryFallback.has(key) ? memoryFallback.get(key) : null;
   }
 }
-async function kvSet(key, value){
+async function idbSetRaw(key, value){
   if(memoryFallback){ memoryFallback.set(key, value); return true; }
   try{
     const db = await openDB();
@@ -449,6 +451,81 @@ async function kvKeys(prefix){
       req.onerror = ()=>reject(req.error);
     });
   }catch(e){ return []; }
+}
+
+/* ============================= CLOUD SYNC (Supabase) ============================= */
+
+const SUPABASE_URL = 'https://kudrffjiukkkydktlkdd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1ZHJmZmppdWtra3lka3Rsa2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODYyMTksImV4cCI6MjEwNDU2MjIxOX0.pcPm6G1JuzFASFOtqhyLAdefzEnfm9dMKyTY29mmmcI';
+let sb = null;
+let authUser = null;
+let authReady = false;
+
+function initSupabase(){
+  try{
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }catch(e){ sb = null; }
+}
+
+async function initAuth(){
+  if(!sb) return;
+  const { data } = await sb.auth.getSession();
+  authUser = data && data.session ? data.session.user : null;
+  authReady = true;
+  sb.auth.onAuthStateChange((event, session)=>{
+    const was = authUser;
+    authUser = session ? session.user : null;
+    if(!!was !== !!authUser){
+      // logged in or out — reload current data from the right source and redraw
+      reloadAllAndRender();
+    } else {
+      render();
+    }
+  });
+}
+
+async function reloadAllAndRender(){
+  await loadPrograms();
+  await loadMeta();
+  await loadTemplates();
+  await loadWeek(currentWeek);
+  await loadPrevWeek(currentWeek);
+  render();
+}
+
+async function cloudGet(key){
+  if(!sb || !authUser) return null;
+  try{
+    const { data, error } = await sb.from('app_data').select('value').eq('key', key).maybeSingle();
+    if(error || !data) return null;
+    return data.value;
+  }catch(e){ return null; }
+}
+async function cloudSet(key, value){
+  if(!sb || !authUser) return false;
+  try{
+    const { error } = await sb.from('app_data').upsert(
+      { user_id: authUser.id, key, value, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,key' }
+    );
+    return !error;
+  }catch(e){ return false; }
+}
+
+async function kvGet(key){
+  if(authUser){
+    const cloudVal = await cloudGet(key);
+    if(cloudVal !== null){
+      idbSetRaw(key, cloudVal).catch(()=>{});
+      return cloudVal;
+    }
+  }
+  return await idbGetRaw(key);
+}
+async function kvSet(key, value){
+  const localOk = await idbSetRaw(key, value);
+  if(authUser) cloudSet(key, value); // fire-and-forget; local write already covers offline/instant UI
+  return localOk;
 }
 
 /* ============================= PROGRAMS (multi-cycle support) ============================= */
@@ -814,6 +891,7 @@ function render(){
   app.innerHTML = `
     ${renderTopControls()}
     ${showProgramPanel ? renderProgramPanel() : ''}
+    ${showAuthPanel ? renderAuthPanel() : ''}
     ${renderDayReminder(wk)}
     ${renderHero(wk)}
     ${renderTabs()}
@@ -833,7 +911,25 @@ function renderTopControls(){
   const meta = currentProgramMeta();
   return `<div class="top-controls">
     <button class="program-switcher" id="program-switcher-btn">Programa: ${meta.name} ▾</button>
-    <button class="icon-btn" id="theme-toggle-btn" title="Alternar tema">${theme==='dark'?'☀️':'🌙'}</button>
+    <div style="display:flex;gap:8px;">
+      <button class="icon-btn" id="auth-toggle-btn" title="${authUser?'Sincronizado':'Entrar / sincronizar'}">${authUser?'☁️':'🔒'}</button>
+      <button class="icon-btn" id="theme-toggle-btn" title="Alternar tema">${theme==='dark'?'☀️':'🌙'}</button>
+    </div>
+  </div>`;
+}
+
+function renderAuthPanel(){
+  if(authUser){
+    return `<div class="program-panel">
+      <div style="font-size:13px;margin-bottom:10px;">Conectado como <strong>${authUser.email}</strong> — seus dados sincronizam entre os aparelhos em que você fizer login.</div>
+      <button class="restore-btn" id="logout-btn" style="margin-top:0;">Sair desta conta</button>
+    </div>`;
+  }
+  return `<div class="program-panel">
+    <div style="font-size:13px;color:var(--ink-muted);margin-bottom:10px;">Entre com seu e-mail para sincronizar seus treinos entre celular e computador. Sem login, os dados ficam só neste aparelho.</div>
+    <input type="email" id="auth-email" placeholder="seu@email.com" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:2px;font-family:'Inter';font-size:13px;margin-bottom:8px;">
+    <button class="add-ex-btn" id="auth-send-btn">Enviar link de acesso</button>
+    <div id="auth-message" style="font-size:12px;color:var(--ink-muted);margin-top:8px;"></div>
   </div>`;
 }
 
@@ -1642,6 +1738,24 @@ function attachEvents(wk){
     showProgramPanel = !showProgramPanel;
     render();
   });
+  document.getElementById('auth-toggle-btn')?.addEventListener('click', ()=>{
+    showAuthPanel = !showAuthPanel;
+    render();
+  });
+  document.getElementById('auth-send-btn')?.addEventListener('click', async ()=>{
+    const emailInp = document.getElementById('auth-email');
+    const msgEl = document.getElementById('auth-message');
+    const email = emailInp ? emailInp.value.trim() : '';
+    if(!email){ if(msgEl) msgEl.textContent = 'Digite um e-mail válido.'; return; }
+    if(msgEl) msgEl.textContent = 'Enviando...';
+    if(!sb){ if(msgEl) msgEl.textContent = 'Sincronização indisponível no momento.'; return; }
+    const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: window.location.href.split('#')[0] } });
+    if(msgEl) msgEl.textContent = error ? ('Erro: '+error.message) : 'Link enviado! Confira seu e-mail e abra o link no mesmo aparelho.';
+  });
+  document.getElementById('logout-btn')?.addEventListener('click', async ()=>{
+    if(sb) await sb.auth.signOut();
+    showAuthPanel = false;
+  });
   document.querySelectorAll('[data-switchprog]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       showProgramPanel = false;
@@ -1726,6 +1840,8 @@ if('serviceWorker' in navigator){
   document.getElementById('app').innerHTML = '<div class="chart-empty">Carregando…</div>';
   theme = localStorage.getItem('treino-theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   applyTheme();
+  if(window.supabase) initSupabase();
+  await initAuth();
   await loadPrograms();
   await loadMeta();
   await loadTemplates();
