@@ -259,7 +259,64 @@
   .day-reminder button{font-size:12px;font-weight:600;padding:7px 12px;border-radius:14px;border:1px solid var(--orange);background:var(--paper-raised);color:var(--orange);cursor:pointer;flex-shrink:0;}
   .day-reminder .dismiss{background:none;border:none;color:var(--orange);font-size:16px;padding:4px 8px;cursor:pointer;font-weight:400;}
 
+  .auth-tabs{display:flex;gap:6px;margin-bottom:12px;}
+  .auth-tabs button{flex:1;padding:9px;border:1px solid var(--line);background:var(--paper);color:var(--ink-muted);border-radius:14px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .auth-tabs button.on{background:var(--ink);color:var(--paper-raised);border-color:var(--ink);}
+  .auth-input{width:100%;padding:10px;border:1px solid var(--line);border-radius:2px;font-family:'Inter';font-size:14px;margin-bottom:8px;background:var(--paper);color:var(--ink);}
+  .link-btn{background:none;border:none;color:var(--ink-muted);font-size:12px;text-decoration:underline;cursor:pointer;padding:6px 0;}
+  .day-notes{margin-top:16px;}
+  .day-notes textarea{width:100%;min-height:84px;padding:10px;border:1px solid var(--line);border-radius:var(--radius);font-family:'Inter';font-size:13px;resize:vertical;background:var(--paper);color:var(--ink);}
+  .prev-note-block{font-size:11.5px;color:var(--ink-faint);margin-top:6px;white-space:pre-wrap;}
+  .rpe-input.auto{font-style:italic;color:var(--ink-muted);}
+  .set-type-toggle.drop{background:#EFE0EE;color:#7A3E78;border-color:#7A3E78;}
+  .method-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.3px;color:#7A3E78;background:#EFE0EE;border-radius:8px;padding:2px 7px;margin-right:6px;vertical-align:middle;}
+  .group-card{border-left:3px solid #7A3E78;padding-left:10px;}
+  .method-hint{font-size:11.5px;color:var(--ink-muted);background:var(--paper);border-radius:var(--radius);padding:8px 10px;margin-bottom:10px;}
+  .group-member{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px;}
+  .group-member:first-of-type{border-top:none;margin-top:0;padding-top:0;}
+  .group-member-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;font-weight:600;margin-bottom:6px;}
+  .group-member-head .member-target{font-size:11px;font-weight:400;color:var(--ink-muted);}
+  .toggle-line{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0 10px;cursor:pointer;}
+  .toggle-line input{width:20px;height:20px;}
+  .field-label{width:90px;font-size:12px;color:var(--ink-muted);flex-shrink:0;}
+  .sel-box{width:22px;height:22px;flex-shrink:0;}
+  .group-form{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;}
+  .group-form select,.group-form input{padding:8px;border:1px solid var(--line);border-radius:2px;font-size:12.5px;font-family:'Inter';background:var(--paper-raised);color:var(--ink);}
+  .group-form input.grow{flex:1;min-width:150px;}
+  .group-list-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:12.5px;}
+  .group-list-row button{font-size:11px;padding:6px 10px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink-muted);cursor:pointer;}
+  .day-chip.rest{opacity:.55;}
+  .rest-day-box{text-align:center;padding:24px 10px;color:var(--ink-muted);font-size:14px;}
   .share-btn{font-size:12px;font-weight:600;padding:7px 12px;border-radius:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink-muted);cursor:pointer;margin-top:12px;}
+
+  /* ---- métodos avançados / edição de dias ---- */
+  .method-badge{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;padding:2px 6px;border-radius:8px;margin-left:6px;vertical-align:middle;background:#EFE0EE;color:#7A3E78;}
+  [data-theme="dark"] .method-badge{background:#3A2A3A;color:#D9A8D7;}
+  .part-block{padding:6px 0 4px;border-top:1px dashed var(--line);}
+  .part-label{font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:5px;}
+  .ex-edit-block{border-top:1px solid var(--line);padding:6px 0;}
+  .ex-edit-block:first-child{border-top:none;}
+  .ex-edit-block .ex-edit-row{border-top:none;padding:4px 0;}
+  .adv-details{margin:2px 0 4px;}
+  .adv-details summary{font-size:11.5px;color:var(--ink-faint);cursor:pointer;padding:6px 0;}
+  .adv-body{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0 6px;}
+  .adv-body select,.add-ex-form select{padding:8px;border:1px solid var(--line);border-radius:2px;font-size:12.5px;font-family:'Inter';background:var(--paper-raised);color:var(--ink);}
+  .adv-body input{flex:1;min-width:180px;padding:8px;border:1px solid var(--line);border-radius:2px;font-size:12.5px;font-family:'Inter';background:var(--paper);color:var(--ink);}
+  .adv-hint{font-size:11.5px;color:var(--ink-faint);margin:6px 0;}
+  .check-row{display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0;cursor:pointer;}
+  .check-row input{width:20px;height:20px;}
+  .day-config{border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:14px;}
+  .day-config label.lbl{font-size:11px;color:var(--ink-faint);display:block;margin-bottom:4px;}
+  .day-config input[type=text]{width:100%;padding:9px;border:1px solid var(--line);border-radius:2px;font-size:13px;font-family:'Inter';background:var(--paper);color:var(--ink);}
+  .cardio-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
+  .cardio-edit-grid label{font-size:11px;color:var(--ink-faint);display:block;margin-bottom:3px;}
+  .cardio-edit-grid select,.cardio-edit-grid input{width:100%;padding:9px;border:1px solid var(--line);border-radius:2px;font-size:13px;font-family:'Inter';background:var(--paper);color:var(--ink);}
+  .rest-card{background:var(--blue-soft);border-radius:var(--radius);padding:16px;text-align:center;margin-bottom:12px;}
+  .rest-card .rest-title{font-family:'Oswald';font-size:18px;color:var(--blue);margin-bottom:4px;}
+  .rest-card .rest-text{font-size:13px;color:var(--ink-muted);}
+  .day-chip.rest{opacity:.6;}
+  .note-dot{font-size:10px;margin-left:3px;color:var(--ink-faint);}
+  @media (max-width:520px){ .cardio-edit-grid{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -345,6 +402,37 @@ const DAY_TEMPLATES = [
 
 const LONGAO_KM = [3,4,5,3, 6,7,8,3, 5,5.5,6,3];
 
+function esc(v){
+  return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+const METHODS = {
+  normal:    {label:'Normal', min:1, hint:''},
+  superset:  {label:'Super-set', min:2, hint:'exercícios feitos em sequência, sem descanso entre eles'},
+  triset:    {label:'Tri-set', min:3, hint:'três exercícios em sequência, sem descanso'},
+  dropset:   {label:'Drop set', min:2, hint:'etapas seguidas com carga reduzida (pode variar o exercício, ex: normal + unilateral)'},
+  restpause: {label:'Rest-pause', min:2, hint:'série até a falha seguida de mini-séries com pausa curta'}
+};
+function isMethodEx(ex){ return !!(ex && ex.method && ex.method!=='normal' && Array.isArray(ex.parts) && ex.parts.length>=2); }
+function parseParts(method, str){
+  let parts = String(str||'').split('+').map(x=>x.trim()).filter(Boolean);
+  if(parts.length===1 && method==='dropset') parts = [parts[0]+' (carga cheia)', parts[0]+' (drop 1)', parts[0]+' (drop 2)'];
+  else if(parts.length===1 && method==='restpause') parts = [parts[0]+' (série)', parts[0]+' (rest-pause 1)', parts[0]+' (rest-pause 2)'];
+  return parts;
+}
+function methodOptionsHtml(sel){
+  return Object.keys(METHODS).map(k=>'<option value="'+k+'" '+(sel===k?'selected':'')+'>'+METHODS[k].label+'</option>').join('');
+}
+
+const CARDIO_TYPES = {
+  leve:  {label:'Corrida leve', defaults:{adaptacao:'15–20 min, ritmo confortável', volume:'25 min, ritmo confortável', forca:'30 min, ritmo confortável', deload:'15 min, bem leve'}},
+  tiros: {label:'Tiros / intervalado', defaults:{adaptacao:'5min aquec. + 6×(30s forte / 90s caminhada) + 5min leve', volume:'5min aquec. + 8×(30s forte / 90s caminhada) + 5min leve', forca:'5min aquec. + 8×(45s forte / 90s caminhada) + 5min leve', deload:'5min aquec. + 4×(30s forte / 90s caminhada) + 5min leve'}},
+  longao:{label:'Longão (km por semana)', defaults:null},
+  cross: {label:'Cross-training (baixo impacto)', defaults:{adaptacao:'20 min elíptico/bike, ritmo moderado', volume:'20–25 min elíptico/bike', forca:'25 min elíptico/bike', deload:'15 min bem leve'}},
+  custom:{label:'Personalizado', defaults:{adaptacao:'', volume:'', forca:'', deload:''}}
+};
+const BASE_CARDIO_TYPE = {seg_leve:'leve', qua_tiro:'tiros', sab_cross:'cross', dom_longao:'longao'};
+
 const MAIN_LIFTS = [
   {id:'supino_reto', label:'Supino reto', dayKey:'seg'},
   {id:'agachamento', label:'Agachamento', dayKey:'ter'},
@@ -364,9 +452,9 @@ function computeWeekTonnage(weekObj){
     if(TIME_BASED_IDS.has(exId)) return;
     const log = weekObj.logs[exId];
     if(!log || !Array.isArray(log.sets)) return;
-    log.sets.forEach(s=>{
-      const c = parseFloat(s.carga)||0, r = parseFloat(s.reps)||0;
-      if(r){ total += c*r; any = true; }
+    log.sets.forEach(st=>{
+      const x = setStats(st, null);
+      if(x.sets){ total += x.vol; any = true; }
     });
   });
   return any ? Math.round(total) : null;
@@ -387,6 +475,11 @@ let saveTimer = null;
 let theme = 'light';
 let showProgramPanel = false;
 let showAuthPanel = false;
+let authMode = 'login';
+let recoveryMode = false;
+let selectedForGroup = new Set();
+let histBest = {};
+let weeksCache = null;
 let dismissedReminderKey = null;
 let pendingUndo = null; // {exId, exercise, timeoutId}
 let trackExpanded = false;
@@ -475,6 +568,7 @@ async function initAuth(){
   sb.auth.onAuthStateChange((event, session)=>{
     const was = authUser;
     authUser = session ? session.user : null;
+    if(event==='PASSWORD_RECOVERY'){ recoveryMode = true; showAuthPanel = true; }
     if(!!was !== !!authUser){
       // logged in or out — reload current data from the right source and redraw
       reloadAllAndRender();
@@ -485,6 +579,7 @@ async function initAuth(){
 }
 
 async function reloadAllAndRender(){
+  weeksCache = null;
   await loadPrograms();
   await loadMeta();
   await loadTemplates();
@@ -583,7 +678,7 @@ async function switchProgram(id){
 /* ============================= WEEK DATA LOAD/SAVE ============================= */
 
 function emptyWeekData(){
-  return {logs:{}, cardio:{}, retro:''};
+  return {logs:{}, cardio:{}, retro:'', dayNotes:{}};
 }
 
 async function loadWeek(n){
@@ -592,6 +687,7 @@ async function loadWeek(n){
     weekData = raw ? JSON.parse(raw) : emptyWeekData();
     if(!weekData.logs) weekData.logs = {};
     if(!weekData.cardio) weekData.cardio = {};
+    if(!weekData.dayNotes) weekData.dayNotes = {};
     Object.keys(weekData.logs).forEach(id=>{ weekData.logs[id] = migrateLog(weekData.logs[id]); });
   }catch(e){ weekData = emptyWeekData(); }
 }
@@ -640,6 +736,9 @@ function queueWeekSave(programId, weekNum, payload){
 }
 async function persistWeek(programId, weekNum, payload){
   const ok = await kvSet('prog:'+programId+':week:'+weekNum, payload);
+  if(weeksCache && weeksCache.program===programId){
+    try{ weeksCache.data[weekNum-1] = JSON.parse(payload); }catch(e){}
+  }
   flashStatus(!!ok);
 }
 
@@ -701,6 +800,86 @@ function getDayExercises(day, wk){
   return getDayExercisesForScope(day, wk.mesoKey);
 }
 
+function dayCustom(day){ return customTemplates[day.key] || {}; }
+function dayFocus(day){ const m = dayCustom(day).dayMeta; return (m && m.focus) ? m.focus : day.focus; }
+function isRestDay(day){ const m = dayCustom(day).dayMeta; return !!(m && m.rest); }
+function ensureDayMeta(day){
+  if(!customTemplates[day.key]) customTemplates[day.key] = {};
+  if(!customTemplates[day.key].dayMeta) customTemplates[day.key].dayMeta = {};
+  return customTemplates[day.key].dayMeta;
+}
+function effectiveCardio(day){
+  const c = dayCustom(day);
+  const cfg = c.cardioConfig;
+  const base = day.cardio || null;
+  const empty = {adaptacao:'', volume:'', forca:'', deload:''};
+  if(cfg){
+    if(cfg.enabled===false) return null;
+    const type = cfg.type || 'custom';
+    return {
+      id: cfg.id || (base ? base.id : day.key+'_cardio'),
+      label: cfg.label || (CARDIO_TYPES[type]||CARDIO_TYPES.custom).label,
+      type, isLongao: type==='longao',
+      target: Object.assign({}, empty, cfg.target||{}),
+      longaoKm: Array.isArray(cfg.longaoKm) ? cfg.longaoKm : LONGAO_KM.slice()
+    };
+  }
+  if(!base) return null;
+  return {
+    id: base.id, label: base.label, type: BASE_CARDIO_TYPE[base.id] || 'custom', isLongao: !!base.isLongao,
+    target: Object.assign({}, empty, base.target||{}, c.cardioOverride||{}),
+    longaoKm: Array.isArray(c.longaoKmOverride) ? c.longaoKmOverride : LONGAO_KM.slice()
+  };
+}
+function ensureCardioCfg(day){
+  if(!customTemplates[day.key]) customTemplates[day.key] = {};
+  const c = customTemplates[day.key];
+  if(!c.cardioConfig){
+    const cur = effectiveCardio(day);
+    if(cur){
+      c.cardioConfig = {enabled:true, id:cur.id, type:cur.type, label:cur.label, target:Object.assign({}, cur.target), longaoKm:cur.longaoKm.slice()};
+    } else {
+      c.cardioConfig = {enabled:false, id:day.key+'_cardio', type:'leve', label:CARDIO_TYPES.leve.label, target:Object.assign({}, CARDIO_TYPES.leve.defaults), longaoKm:LONGAO_KM.slice()};
+    }
+  }
+  if(!c.cardioConfig.target) c.cardioConfig.target = {};
+  return c.cardioConfig;
+}
+function longaoKmFor(n){
+  for(const d of DAY_TEMPLATES){
+    const cd = effectiveCardio(d);
+    if(cd && cd.isLongao){ const v = cd.longaoKm[n-1]; return (v!=null && v!=='') ? v : LONGAO_KM[n-1]; }
+  }
+  return null;
+}
+function longaoCardioIds(){
+  const ids = [];
+  DAY_TEMPLATES.forEach(d=>{ const cd = effectiveCardio(d); if(cd && cd.isLongao) ids.push(cd.id); });
+  return ids;
+}
+function findExercise(exId){
+  const wk = weekInfo(currentWeek);
+  for(const d of DAY_TEMPLATES){
+    const f = getDayExercises(d, wk).find(e=>e.id===exId);
+    if(f) return f;
+  }
+  return null;
+}
+function setStats(s, ex){
+  if(s && Array.isArray(s.parts)){
+    let reps=0, vol=0, n=0;
+    s.parts.forEach(p=>{
+      if(!p) return;
+      const r = parseFloat(p.reps)||0, c = parseFloat(p.carga)||0;
+      if(r){ reps+=r; vol+=c*r; n++; }
+    });
+    const countEach = ex && (ex.method==='superset' || ex.method==='triset');
+    return {sets: n===0 ? 0 : (countEach ? n : 1), reps, vol};
+  }
+  const r = parseFloat(s && s.reps)||0, c = parseFloat(s && s.carga)||0;
+  return r ? {sets:1, reps:r, vol:c*r} : {sets:0, reps:0, vol:0};
+}
+
 function updateTemplateField(day, exId, field, value, scopeKey){
   const key = day.key;
   if(!customTemplates[key]) customTemplates[key] = {};
@@ -724,42 +903,57 @@ function updateTemplateField(day, exId, field, value, scopeKey){
   saveTemplates();
 }
 
-function removeExercise(day, exId, scopeKey){
+function removeExerciseCore(day, exId, scopeKey){
   const key = day.key;
   if(!customTemplates[key]) customTemplates[key] = {};
   const existsInBase = day.strength.some(e=>e.id===exId);
-  let restoreFn;
   if(existsInBase){
     if(!customTemplates[key][scopeKey]) customTemplates[key][scopeKey] = {};
     const scope = customTemplates[key][scopeKey];
     scope.removed = scope.removed || [];
     if(!scope.removed.includes(exId)) scope.removed.push(exId);
-    restoreFn = ()=>{ scope.removed = scope.removed.filter(id=>id!==exId); saveTemplates(); };
   } else {
-    let removedItem = null, removedFromScope = null;
     SCOPES.forEach(sk=>{
       const sc = customTemplates[key][sk];
-      if(sc && sc.added){
-        const idx = sc.added.findIndex(e=>e.id===exId);
-        if(idx>=0){ removedItem = sc.added[idx]; removedFromScope = sk; sc.added.splice(idx,1); }
-      }
+      if(sc && sc.added) sc.added = sc.added.filter(e=>e.id!==exId);
     });
-    restoreFn = ()=>{
-      if(removedItem && removedFromScope){
-        if(!customTemplates[key][removedFromScope]) customTemplates[key][removedFromScope] = {};
-        if(!customTemplates[key][removedFromScope].added) customTemplates[key][removedFromScope].added = [];
-        customTemplates[key][removedFromScope].added.push(removedItem);
-        saveTemplates();
-      }
-    };
   }
-  saveTemplates();
+}
+function registerUndo(restoreFn, message){
   if(pendingUndo) clearTimeout(pendingUndo.timeoutId);
-  pendingUndo = { restore: restoreFn, timeoutId: setTimeout(()=>{ pendingUndo=null; render(); }, 6000) };
+  pendingUndo = { restore: restoreFn, message: message || 'Exercício removido', timeoutId: setTimeout(()=>{ pendingUndo=null; render(); }, 6000) };
+}
+function restoreDaySnapshot(day, snapshot){
+  const parsed = JSON.parse(snapshot);
+  if(parsed===null) delete customTemplates[day.key]; else customTemplates[day.key] = parsed;
+  saveTemplates();
+}
+function removeExercise(day, exId, scopeKey){
+  const snapshot = JSON.stringify(customTemplates[day.key] || null);
+  removeExerciseCore(day, exId, scopeKey);
+  saveTemplates();
+  registerUndo(()=>restoreDaySnapshot(day, snapshot), 'Exercício removido');
+  render();
+}
+function clearDayExercises(day, scopeKey){
+  const snapshot = JSON.stringify(customTemplates[day.key] || null);
+  getDayExercisesForScope(day, scopeKey).forEach(ex=>removeExerciseCore(day, ex.id, scopeKey));
+  saveTemplates();
+  registerUndo(()=>restoreDaySnapshot(day, snapshot), 'Exercícios do dia removidos');
   render();
 }
 
-function addExercise(day, name, sets, reps, scopeKey){
+function addExercise(day, name, sets, reps, scopeKey, method, partsStr){
+  method = method || 'normal';
+  let parts = [];
+  if(method!=='normal'){
+    parts = parseParts(method, partsStr);
+    if(parts.length < METHODS[method].min){
+      alert('Para '+METHODS[method].label+' informe pelo menos '+METHODS[method].min+' itens separados por "+". Ex: Rosca direta + Rosca alternada');
+      return;
+    }
+    if(!name || !name.trim()) name = parts.join(' + ');
+  }
   if(!name || !name.trim()) return;
   const key = day.key;
   if(!customTemplates[key]) customTemplates[key] = {};
@@ -767,7 +961,9 @@ function addExercise(day, name, sets, reps, scopeKey){
   const scope = customTemplates[key][scopeKey];
   scope.added = scope.added || [];
   const id = 'custom_' + Date.now() + '_' + Math.floor(Math.random()*1000);
-  scope.added.push({id, name:name.trim(), baseSets: parseInt(sets)||3, baseReps: reps||'', main:false});
+  const item = {id, name:name.trim(), baseSets: parseInt(sets)||3, baseReps: reps||'', main:false};
+  if(method!=='normal'){ item.method = method; item.parts = parts; }
+  scope.added.push(item);
   saveTemplates();
   render();
 }
@@ -802,15 +998,13 @@ function targetFor(ex, wk){
   return {sets: ex.baseSets, reps: ex.baseReps, note:''};
 }
 
-function cardioTarget(cardio, wk, dayKey){
+function cardioTarget(cardio, wk){
   if(cardio.isLongao){
-    const overrideArr = dayKey && customTemplates[dayKey] && customTemplates[dayKey].longaoKmOverride;
-    const val = overrideArr && overrideArr[wk.n-1]!=null && overrideArr[wk.n-1]!=='' ? overrideArr[wk.n-1] : LONGAO_KM[wk.n-1];
-    return `${val} km — ritmo leve e constante`;
+    const arr = cardio.longaoKm || LONGAO_KM;
+    const val = (arr[wk.n-1]!=null && arr[wk.n-1]!=='') ? arr[wk.n-1] : LONGAO_KM[wk.n-1];
+    return val + ' km — ritmo leve e constante';
   }
-  const override = dayKey && customTemplates[dayKey] && customTemplates[dayKey].cardioOverride;
-  if(override && override[wk.phaseKey]) return override[wk.phaseKey];
-  return cardio.target[wk.phaseKey];
+  return (cardio.target && cardio.target[wk.phaseKey]) || '—';
 }
 
 function phaseClass(wk){ return wk.isDeload ? 'phase-deload' : 'phase-'+wk.phaseKey; }
@@ -826,7 +1020,7 @@ function epley1RM(carga, reps){
 function bestWorkSet(sets){
   if(!Array.isArray(sets)) return null;
   let best=null, bestVal=-1;
-  sets.filter(s=>s.tipo!=='aquecimento' && s.carga && s.reps).forEach(s=>{
+  sets.filter(s=>s.tipo!=='aquecimento' && s.tipo!=='drop' && s.carga && s.reps).forEach(s=>{
     const v = epley1RM(s.carga, s.reps);
     if(v && v>bestVal){ bestVal=v; best=s; }
   });
@@ -840,6 +1034,10 @@ function prevLogFor(id){
 function prevSummary(ex, wk){
   const log = prevLogFor(ex.id);
   if(!log || !Array.isArray(log.sets) || log.sets.length===0) return null;
+  if(log.sets.some(x=>Array.isArray(x.parts))){
+    let vol = 0; log.sets.forEach(x=>{ vol += setStats(x, ex).vol; });
+    return vol ? ('sem. '+(wk.n-1)+': '+log.sets.length+' séries · '+Math.round(vol)+'kg vol.') : null;
+  }
   const best = bestWorkSet(log.sets);
   if(!best) return null;
   let txt = `sem. ${wk.n-1}: ${best.carga}kg × ${best.reps}`;
@@ -852,10 +1050,71 @@ function prevSummary(ex, wk){
 
 function summaryChipFor(log){
   if(!log || !Array.isArray(log.sets) || log.sets.length===0) return '';
-  const best = bestWorkSet(log.sets);
   const parts = [`${log.sets.length} série${log.sets.length>1?'s':''}`];
-  if(best) parts.push(`melhor ${best.carga}kg×${best.reps}`);
+  if(log.sets.some(x=>Array.isArray(x.parts))){
+    let vol = 0; log.sets.forEach(x=>{ vol += setStats(x, null).vol; });
+    if(vol) parts.push(Math.round(vol)+'kg vol.');
+  } else {
+    const best = bestWorkSet(log.sets);
+    if(best) parts.push(`melhor ${best.carga}kg×${best.reps}`);
+  }
   return parts.join(' · ');
+}
+
+function phaseRPE(wk){
+  if(wk.isDeload) return 6;
+  return ({adaptacao:7, volume:7.5, forca:8.5})[wk.phaseKey] || 7;
+}
+
+function referenceE1RM(exId){
+  let best = histBest[exId] || 0;
+  const pl = prevLogFor(exId);
+  const pb = pl ? bestWorkSet(pl.sets) : null;
+  const pv = pb ? epley1RM(pb.carga, pb.reps) : null;
+  if(pv && pv > best) best = pv;
+  return best || null;
+}
+
+// Estimated RPE from load x reps against the best e1RM from OTHER weeks (reps in reserve = max reps at that load - reps done)
+function estimateRPE(exId, carga, reps){
+  const ref = referenceE1RM(exId);
+  const w = parseFloat(String(carga).replace(',', '.'));
+  const r = parseFloat(String(reps).replace(',', '.'));
+  if(!ref || !w || !r || w<=0 || r<=0) return null;
+  const maxReps = 30 * (ref / w - 1);
+  let rpe = 10 - (maxReps - r);
+  rpe = Math.max(5, Math.min(10, rpe));
+  return Math.round(rpe * 2) / 2;
+}
+
+function addSetTo(exId){
+  if(!weekData.logs[exId]) weekData.logs[exId] = {sets:[], obs:''};
+  const log = weekData.logs[exId];
+  if(!Array.isArray(log.sets)) log.sets = [];
+  const prev = log.sets.length ? log.sets[log.sets.length-1] : null;
+  let rpe = '';
+  if(!TIME_BASED_IDS.has(exId)){
+    rpe = (prev && prev.tipo!=='aquecimento' && prev.rpe) ? prev.rpe : String(phaseRPE(weekInfo(currentWeek)));
+  }
+  const ex = findExercise(exId);
+  const ns = {tipo:'trabalho', rpe, rpeAuto:true};
+  if(isMethodEx(ex)) ns.parts = ex.parts.map(()=>({carga:'', reps:''}));
+  else { ns.carga = ''; ns.reps = ''; }
+  log.sets.push(ns);
+}
+
+function autoFillRPE(exId, idx){
+  const log = weekData.logs[exId];
+  const s = log && Array.isArray(log.sets) ? log.sets[idx] : null;
+  if(!s || TIME_BASED_IDS.has(exId)) return;
+  const isAuto = s.rpeAuto===true || (s.rpeAuto===undefined && !s.rpe);
+  if(!isAuto || s.tipo==='aquecimento') return;
+  let val = (s.tipo==='drop') ? 9.5 : estimateRPE(exId, s.carga, s.reps);
+  if(val===null) val = s.rpe ? parseFloat(s.rpe) : phaseRPE(weekInfo(currentWeek));
+  s.rpe = String(val);
+  s.rpeAuto = true;
+  const inp = document.querySelector('input[data-setex="'+exId+'"][data-setidx="'+idx+'"][data-setfield="rpe"]');
+  if(inp){ inp.value = s.rpe; inp.classList.add('auto'); }
 }
 
 function resolvedMainLiftLabel(lift){
@@ -873,11 +1132,11 @@ function computeSessionTotals(day, wk){
     if(ex.isTime) return;
     const log = weekData.logs[ex.id];
     if(!log || !Array.isArray(log.sets)) return;
-    log.sets.forEach(s=>{
-      const c = parseFloat(s.carga)||0, r = parseFloat(s.reps)||0;
-      if(!r) return;
-      if(s.tipo==='aquecimento'){ warmSets++; warmReps+=r; warmVolume+=c*r; }
-      else { workSets++; workReps+=r; workVolume+=c*r; }
+    log.sets.forEach(st=>{
+      const x = setStats(st, ex);
+      if(!x.sets) return;
+      if(st.tipo==='aquecimento'){ warmSets+=x.sets; warmReps+=x.reps; warmVolume+=x.vol; }
+      else { workSets+=x.sets; workReps+=x.reps; workVolume+=x.vol; }
     });
   });
   return {workSets, workReps, workVolume:Math.round(workVolume), warmSets, warmReps, warmVolume:Math.round(warmVolume)};
@@ -910,7 +1169,7 @@ function render(){
 function renderTopControls(){
   const meta = currentProgramMeta();
   return `<div class="top-controls">
-    <button class="program-switcher" id="program-switcher-btn">Programa: ${meta.name} ▾</button>
+    <button class="program-switcher" id="program-switcher-btn">Programa: ${esc(meta.name)} ▾</button>
     <div style="display:flex;gap:8px;">
       <button class="icon-btn" id="auth-toggle-btn" title="${authUser?'Sincronizado':'Entrar / sincronizar'}">${authUser?'☁️':'🔒'}</button>
       <button class="icon-btn" id="theme-toggle-btn" title="Alternar tema">${theme==='dark'?'☀️':'🌙'}</button>
@@ -921,22 +1180,104 @@ function renderTopControls(){
 function renderAuthPanel(){
   if(authUser){
     return `<div class="program-panel">
-      <div style="font-size:13px;margin-bottom:10px;">Conectado como <strong>${authUser.email}</strong> — seus dados sincronizam entre os aparelhos em que você fizer login.</div>
-      <button class="restore-btn" id="logout-btn" style="margin-top:0;">Sair desta conta</button>
+      <div style="font-size:13px;margin-bottom:10px;">${recoveryMode ? 'Defina sua nova senha abaixo.' : 'Conectado como <strong>'+esc(authUser.email)+'</strong> — seus dados sincronizam entre os aparelhos em que você fizer login.'}</div>
+      <div class="block-label" style="margin-top:6px;">${recoveryMode ? 'Nova senha' : 'Alterar senha'}</div>
+      <input type="password" id="auth-newpass" class="auth-input" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password">
+      <button class="add-ex-btn" id="auth-changepass-btn" style="padding:9px 14px;">Salvar nova senha</button>
+      <div id="auth-message" style="font-size:12px;color:var(--ink-muted);margin-top:8px;"></div>
+      <button class="restore-btn" id="logout-btn" style="margin-top:14px;">Sair desta conta</button>
     </div>`;
   }
+  const signup = authMode==='signup';
   return `<div class="program-panel">
-    <div style="font-size:13px;color:var(--ink-muted);margin-bottom:10px;">Entre com seu e-mail para sincronizar seus treinos entre celular e computador. Sem login, os dados ficam só neste aparelho.</div>
-    <input type="email" id="auth-email" placeholder="seu@email.com" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:2px;font-family:'Inter';font-size:13px;margin-bottom:8px;">
-    <button class="add-ex-btn" id="auth-send-btn">Enviar link de acesso</button>
+    <div style="font-size:13px;color:var(--ink-muted);margin-bottom:12px;">Entre para sincronizar seus treinos entre celular e computador. Sem login, os dados ficam só neste aparelho.</div>
+    <div class="auth-tabs">
+      <button type="button" data-authmode="login" class="${signup?'':'on'}">Entrar</button>
+      <button type="button" data-authmode="signup" class="${signup?'on':''}">Criar conta</button>
+    </div>
+    <input type="email" id="auth-email" class="auth-input" placeholder="seu@email.com" autocomplete="email" inputmode="email">
+    <input type="password" id="auth-password" class="auth-input" placeholder="Senha (mín. 6 caracteres)" autocomplete="${signup?'new-password':'current-password'}">
+    <button class="add-ex-btn" id="auth-submit-btn" style="padding:10px 16px;width:100%;">${signup?'Criar conta':'Entrar'}</button>
+    ${signup ? '' : '<button type="button" class="link-btn" id="auth-forgot-btn">Esqueci minha senha</button>'}
     <div id="auth-message" style="font-size:12px;color:var(--ink-muted);margin-top:8px;"></div>
   </div>`;
+}
+
+function translateAuthError(err){
+  const m = (err && err.message ? err.message : String(err||'')).toLowerCase();
+  if(m.includes('invalid login credentials')) return 'E-mail ou senha incorretos. Se a conta foi criada por link de e-mail, use "Esqueci minha senha" para definir uma senha.';
+  if(m.includes('email not confirmed')) return 'Confirme seu e-mail antes de entrar (veja a caixa de entrada e o spam).';
+  if(m.includes('already registered')) return 'Este e-mail já tem conta. Use "Entrar" ou "Esqueci minha senha".';
+  if(m.includes('password should be') || m.includes('weak password')) return 'Senha fraca ou curta demais. Use pelo menos 6 caracteres.';
+  if(m.includes('rate limit') || m.includes('too many')) return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.';
+  if(m.includes('invalid email') || m.includes('unable to validate email')) return 'E-mail inválido.';
+  if(m.includes('same password') || m.includes('different from the old')) return 'A nova senha precisa ser diferente da atual.';
+  if(m.includes('failed to fetch') || m.includes('network')) return 'Sem conexão. Verifique sua internet.';
+  return 'Erro: ' + (err && err.message ? err.message : 'tente novamente.');
+}
+
+function authRedirectUrl(){
+  return window.location.href.split('#')[0].split('?')[0];
+}
+
+async function handleAuthSubmit(){
+  const email = (document.getElementById('auth-email')?.value || '').trim();
+  const password = document.getElementById('auth-password')?.value || '';
+  const msgEl = document.getElementById('auth-message');
+  const say = t => { if(msgEl) msgEl.textContent = t; };
+  if(!sb){ say('Sincronização indisponível no momento.'); return; }
+  if(!email || !email.includes('@')){ say('Digite um e-mail válido.'); return; }
+  if(password.length < 6){ say('A senha precisa ter pelo menos 6 caracteres.'); return; }
+  say('Aguarde...');
+  try{
+    if(authMode==='signup'){
+      const { data, error } = await sb.auth.signUp({ email, password, options:{ emailRedirectTo: authRedirectUrl() } });
+      if(error){ say(translateAuthError(error)); return; }
+      if(data && data.user && Array.isArray(data.user.identities) && data.user.identities.length===0){
+        say('Este e-mail já tem conta. Use "Entrar" ou "Esqueci minha senha".'); return;
+      }
+      if(data && data.session){ say('Conta criada! Você já está conectado.'); }
+      else { say('Conta criada! Enviamos um e-mail de confirmação — abra o link e depois volte aqui para entrar com sua senha.'); }
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error){ say(translateAuthError(error)); return; }
+    }
+  }catch(e){ say(translateAuthError(e)); }
+}
+
+async function handleForgotPassword(){
+  const email = (document.getElementById('auth-email')?.value || '').trim();
+  const msgEl = document.getElementById('auth-message');
+  const say = t => { if(msgEl) msgEl.textContent = t; };
+  if(!sb){ say('Sincronização indisponível no momento.'); return; }
+  if(!email || !email.includes('@')){ say('Digite seu e-mail acima e toque em "Esqueci minha senha".'); return; }
+  say('Enviando...');
+  try{
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl() });
+    say(error ? translateAuthError(error) : 'Enviamos um link para redefinir a senha. Abra-o no mesmo aparelho e defina a nova senha.');
+  }catch(e){ say(translateAuthError(e)); }
+}
+
+async function handleChangePassword(){
+  const pass = document.getElementById('auth-newpass')?.value || '';
+  const msgEl = document.getElementById('auth-message');
+  const say = t => { if(msgEl) msgEl.textContent = t; };
+  if(!sb || !authUser){ say('Entre na sua conta primeiro.'); return; }
+  if(pass.length < 6){ say('A senha precisa ter pelo menos 6 caracteres.'); return; }
+  say('Salvando...');
+  try{
+    const { error } = await sb.auth.updateUser({ password: pass });
+    if(error){ say(translateAuthError(error)); return; }
+    recoveryMode = false;
+    const inp = document.getElementById('auth-newpass'); if(inp) inp.value = '';
+    say('Senha atualizada com sucesso.');
+  }catch(e){ say(translateAuthError(e)); }
 }
 
 function renderProgramPanel(){
   const rows = programs.map(p=>`
     <div class="program-row ${p.id===currentProgram?'active':''}">
-      <span>${p.name}${p.id===currentProgram?' (atual)':''}</span>
+      <span>${esc(p.name)}${p.id===currentProgram?' (atual)':''}</span>
       ${p.id!==currentProgram ? `<button data-switchprog="${p.id}">Usar</button>` : ''}
     </div>`).join('');
   return `<div class="program-panel">
@@ -961,10 +1302,11 @@ function renderDayReminder(wk){
   const todayKey = new Date().toDateString();
   if(dismissedReminderKey===todayKey) return '';
   if(idx===activeDayIdx && activeTab==='sprint') return '';
+  const rest = isRestDay(day);
   return `<div class="day-reminder">
-    <span>Hoje é dia de <strong>${day.label}</strong> — ${day.focus}</span>
+    <span>${rest ? 'Hoje é <strong>dia de descanso</strong> — aproveite para recuperar.' : 'Hoje é dia de <strong>'+day.label+'</strong> — '+esc(dayFocus(day))}</span>
     <div style="display:flex;gap:8px;align-items:center;">
-      <button data-goto-today="${idx}">Ver treino de hoje</button>
+      <button data-goto-today="${idx}">${rest ? 'Abrir o dia' : 'Ver treino de hoje'}</button>
       <button class="dismiss" id="dismiss-reminder-btn" title="Dispensar por hoje">✕</button>
     </div>
   </div>`;
@@ -1009,28 +1351,38 @@ const SHORT_DAY = {seg:'SEG', ter:'TER', qua:'QUA', qui:'QUI', sex:'SEX', sab:'S
 
 function renderSprint(wk){
   const day = DAY_TEMPLATES[activeDayIdx];
-  if(!editingDay) setTimeout(()=>refreshPRBadges(day, wk), 0);
+  const rest = isRestDay(day);
+  const cardio = effectiveCardio(day);
+  if(!editingDay && !rest) setTimeout(()=>refreshPRBadges(day, wk), 0);
+  const notesMap = weekData.dayNotes || {};
   return `
   <div class="day-strip">
-    ${DAY_TEMPLATES.map((d,i)=>`<div class="day-chip ${i===activeDayIdx?'active':''}" data-day="${i}">
-        <div class="dlabel"><span class="dfull">${d.label}</span><span class="dshort">${SHORT_DAY[d.key]}</span></div>
-        <div class="dfocus">${d.focus}</div>
+    ${DAY_TEMPLATES.map((d,i)=>`<div class="day-chip ${i===activeDayIdx?'active':''} ${isRestDay(d)?'rest':''}" data-day="${i}">
+        <div class="dlabel"><span class="dfull">${d.label}</span><span class="dshort">${SHORT_DAY[d.key]}</span>${(notesMap[d.key]&&String(notesMap[d.key]).trim())?'<span class="note-dot" title="Tem observações">✎</span>':''}</div>
+        <div class="dfocus">${isRestDay(d) ? 'Descanso' : esc(dayFocus(d))}</div>
       </div>`).join('')}
   </div>
   <div class="panel">
     <div class="panel-head">
-      <div><h2>${day.label} — ${day.focus}</h2></div>
+      <div><h2>${day.label} — ${rest ? 'Descanso' : esc(dayFocus(day))}</h2></div>
       <button class="edit-toggle-btn ${editingDay?'on':''}" id="toggle-edit-btn">${editingDay?'Concluir edição':'Editar treino'}</button>
     </div>
-    ${editingDay ? renderExerciseEdit(day) : `
+    ${editingDay ? renderExerciseEdit(day) : (rest ? renderRestDay(day, wk) : `
       ${renderVolumeDropdown(day, wk)}
       ${renderExerciseTable(day, wk)}
-      ${day.cardio ? renderCardio(day.cardio, wk, day.key) : ''}
+      ${cardio ? renderCardio(cardio, wk, day.key) : ''}
       ${renderTotals(day, wk)}
+      ${renderDayNotes(day, wk)}
       ${day.key==='dom' ? renderRetro() : ''}
       <button type="button" class="share-btn" id="share-day-btn">Compartilhar treino</button>
-    `}
+    `)}
   </div>`;
+}
+
+function renderRestDay(day, wk){
+  return `<div class="rest-card"><div class="rest-title">Dia de descanso</div>
+    <div class="rest-text">Sem treino programado. Use as observações abaixo para registrar sono, dores ou sensações.</div></div>
+    ${renderDayNotes(day, wk)}`;
 }
 
 function renderVolumeDropdown(day, wk){
@@ -1040,7 +1392,8 @@ function renderVolumeDropdown(day, wk){
   const rows = exercises.map(ex=>{
     const t = targetFor(ex, wk);
     totalSets += t.sets;
-    return `<div class="vol-list-row"><span>${ex.name}</span><span class="num">${t.sets}× ${t.reps}</span></div>`;
+    const badge = isMethodEx(ex) ? `<span class="method-badge">${METHODS[ex.method].label}</span>` : '';
+    return `<div class="vol-list-row"><span>${esc(ex.name)}${badge}</span><span class="num">${t.sets}× ${esc(t.reps)}</span></div>`;
   }).join('');
   return `<details class="vol-dropdown">
     <summary>Volume planejado da sessão — ${totalSets} séries no total</summary>
@@ -1061,64 +1414,78 @@ function deltaBadgeHtml(ex, wk, curE1){
   return `<span class="delta-badge ${cls}">${sign}${diff}kg vs sem. ${wk.n-1}</span>`;
 }
 
+const SET_TYPE_LABEL = {trabalho:'Trab.', aquecimento:'Aquec.', drop:'Drop'};
+
+function stepperHtml(field, step, exId, i, pi, val, ph, mode){
+  const pa = (pi===null) ? '' : ` data-partidx="${pi}"`;
+  const ps = (pi===null) ? '' : ':'+pi;
+  return `<div class="stepper">
+    <button type="button" data-step="${field}:${-step}:${exId}:${i}${ps}">−</button>
+    <input type="text" inputmode="${mode}" placeholder="${ph}" value="${esc(val||'')}" data-setfield="${field}" data-setex="${exId}" data-setidx="${i}"${pa}>
+    <button type="button" data-step="${field}:${step}:${exId}:${i}${ps}">+</button>
+  </div>`;
+}
+
+function renderSetRow(ex, s, i){
+  const tipo = s.tipo || 'trabalho';
+  const head = `<div class="set-row-top">
+      <div class="set-num">Série ${String(i+1).padStart(2,'0')}</div>
+      <button type="button" class="set-type-toggle ${tipo}" data-toggletype="${ex.id}:${i}">${SET_TYPE_LABEL[tipo]||'Trab.'}</button>
+      <button type="button" class="set-rm-btn" data-removeset="${ex.id}:${i}" title="Remover série">×</button>
+    </div>`;
+  const rpeInput = `<input type="text" inputmode="decimal" class="plain rpe-input ${s.rpeAuto?'auto':''}" placeholder="RPE" value="${esc(s.rpe||'')}" data-setfield="rpe" data-setex="${ex.id}" data-setidx="${i}">`;
+  if(isMethodEx(ex)){
+    const sp = Array.isArray(s.parts) ? s.parts : [];
+    const body = ex.parts.map((pname,pi)=>{
+      const p = sp[pi] || {};
+      return `<div class="part-block"><div class="part-label">${pi+1}. ${esc(pname)}</div>
+        <div class="set-row-bottom">${stepperHtml('carga',2.5,ex.id,i,pi,p.carga,'kg','decimal')}${stepperHtml('reps',1,ex.id,i,pi,p.reps,'reps','numeric')}</div></div>`;
+    }).join('');
+    return `<div class="set-row">${head}${body}<div class="set-row-bottom">${rpeInput}</div></div>`;
+  }
+  if(ex.isTime){
+    return `<div class="set-row">${head}<div class="set-row-bottom">
+      <input type="text" class="plain" placeholder="tempo" value="${esc(s.carga||'')}" data-setfield="carga" data-setex="${ex.id}" data-setidx="${i}">
+      <input type="text" inputmode="numeric" class="plain" placeholder="reps" value="${esc(s.reps||'')}" data-setfield="reps" data-setex="${ex.id}" data-setidx="${i}">
+    </div></div>`;
+  }
+  return `<div class="set-row">${head}<div class="set-row-bottom">${stepperHtml('carga',2.5,ex.id,i,null,s.carga,'kg','decimal')}${stepperHtml('reps',1,ex.id,i,null,s.reps,'reps','numeric')}${rpeInput}</div></div>`;
+}
+
 function renderExerciseTable(day, wk){
   const exercises = getDayExercises(day, wk);
-  if(exercises.length===0) return '';
+  if(exercises.length===0) return '<div class="chart-empty">Nenhum exercício neste dia. Toque em “Editar treino” para adicionar.</div>';
   let lastBlock = null;
   let rows = '';
   exercises.forEach(ex=>{
-    if(ex.block && ex.block!==lastBlock){ rows += `<div class="block-label">${ex.block}</div>`; lastBlock = ex.block; }
+    if(ex.block && ex.block!==lastBlock){ rows += `<div class="block-label">${esc(ex.block)}</div>`; lastBlock = ex.block; }
     else if(!ex.block && lastBlock!==''){ lastBlock=''; }
+    const isM = isMethodEx(ex);
     const t = targetFor(ex, wk);
     const log = weekData.logs[ex.id] || {sets:[], obs:''};
     if(!Array.isArray(log.sets)) log.sets = [];
     const prevTxt = prevSummary(ex, wk);
-    const best = ex.isTime ? null : bestWorkSet(log.sets);
+    const best = (ex.isTime || isM) ? null : bestWorkSet(log.sets);
     const curE1 = best ? epley1RM(best.carga, best.reps) : null;
     const chip = summaryChipFor(log);
     const expanded = !!expandedEx[ex.id];
     const delta = deltaBadgeHtml(ex, wk, curE1);
-
-    const setsHtml = log.sets.map((s,i)=>`
-      <div class="set-row">
-        <div class="set-row-top">
-          <div class="set-num">Série ${String(i+1).padStart(2,'0')}</div>
-          <button type="button" class="set-type-toggle ${s.tipo||'trabalho'}" data-toggletype="${ex.id}:${i}">${(s.tipo||'trabalho')==='aquecimento'?'Aquec.':'Trab.'}</button>
-          <button type="button" class="set-rm-btn" data-removeset="${ex.id}:${i}" title="Remover série">×</button>
-        </div>
-        <div class="set-row-bottom">
-          ${ex.isTime ? `
-            <input type="text" class="plain" placeholder="tempo" value="${s.carga||''}" data-setfield="carga" data-setex="${ex.id}" data-setidx="${i}">
-            <input type="text" inputmode="numeric" class="plain" placeholder="reps" value="${s.reps||''}" data-setfield="reps" data-setex="${ex.id}" data-setidx="${i}">
-          ` : `
-            <div class="stepper">
-              <button type="button" data-step="carga:-2.5:${ex.id}:${i}">−</button>
-              <input type="text" inputmode="decimal" placeholder="kg" value="${s.carga||''}" data-setfield="carga" data-setex="${ex.id}" data-setidx="${i}">
-              <button type="button" data-step="carga:2.5:${ex.id}:${i}">+</button>
-            </div>
-            <div class="stepper">
-              <button type="button" data-step="reps:-1:${ex.id}:${i}">−</button>
-              <input type="text" inputmode="numeric" placeholder="reps" value="${s.reps||''}" data-setfield="reps" data-setex="${ex.id}" data-setidx="${i}">
-              <button type="button" data-step="reps:1:${ex.id}:${i}">+</button>
-            </div>
-            <input type="text" inputmode="decimal" class="plain rpe-input" placeholder="RPE" value="${s.rpe||''}" data-setfield="rpe" data-setex="${ex.id}" data-setidx="${i}">
-          `}
-        </div>
-      </div>`).join('');
-
+    const setsHtml = log.sets.map((st,i)=>renderSetRow(ex, st, i)).join('');
+    const badge = isM ? `<span class="method-badge">${METHODS[ex.method].label}</span>` : '';
+    const mhint = isM ? `${METHODS[ex.method].hint} · ` : '';
     rows += `
       <div class="ex-card">
         <div class="ex-card-head" data-toggle-ex="${ex.id}">
-          <div class="ex-name">${ex.main?'<span class="main-flag"></span>':''}${ex.name}</div>
+          <div class="ex-name">${ex.main?'<span class="main-flag"></span>':''}${esc(ex.name)}${badge}</div>
           <div class="ex-meta">
-            <div class="ex-target-inline">${t.sets}× ${t.reps}</div>
+            <div class="ex-target-inline">${t.sets}× ${esc(t.reps)}</div>
             <div class="ex-summary-chip" id="chip-${ex.id}">${chip}</div>
             ${delta}
           </div>
           <span class="chevron">${expanded?'▴':'▾'}</span>
         </div>
         <div class="ex-card-body" style="display:${expanded?'block':'none'}">
-          <div class="ex-note-line">${t.note}${prevTxt?' · '+prevTxt:''}</div>
+          <div class="ex-note-line">${mhint}${t.note}${prevTxt?' · '+prevTxt:''}</div>
           ${setsHtml}
           <button type="button" class="add-set-btn" data-addset="${ex.id}">+ Adicionar série</button>
           ${log.sets.length>0 ? `<button type="button" class="add-set-btn" data-dupset="${ex.id}">⧉ Duplicar última</button>` : ''}
@@ -1127,8 +1494,8 @@ function renderExerciseTable(day, wk){
             <button type="button" data-resttimer="90">⏱ 90s</button>
             <button type="button" data-resttimer="120">⏱ 120s</button>
           </div>
-          <input type="text" class="obs-input" placeholder="Observações" data-obsex="${ex.id}" value="${log.obs||''}">
-          ${!ex.isTime ? `<div class="e1rm-note" id="e1rm-${ex.id}">${curE1?'e1RM ≈ '+curE1+'kg':''}<span id="pr-${ex.id}"></span></div>` : ''}
+          <input type="text" class="obs-input" placeholder="Observações deste exercício" data-obsex="${ex.id}" value="${esc(log.obs||'')}">
+          ${(!ex.isTime && !isM) ? `<div class="e1rm-note" id="e1rm-${ex.id}">${curE1?'e1RM ≈ '+curE1+'kg':''}<span id="pr-${ex.id}"></span></div>` : ''}
         </div>
       </div>`;
   });
@@ -1137,17 +1504,34 @@ function renderExerciseTable(day, wk){
 
 function renderExerciseEdit(day){
   const exercises = getDayExercisesForScope(day, editScope);
-  const rows = exercises.map(ex=>`
-    <div class="ex-edit-row">
-      <input type="text" class="ex-edit-name" data-editfield="name" data-editex="${ex.id}" value="${ex.name}">
-      <input type="text" inputmode="numeric" class="small" data-editfield="baseSets" data-editex="${ex.id}" value="${ex.baseSets}" placeholder="séries">
-      <input type="text" class="small" data-editfield="baseReps" data-editex="${ex.id}" value="${ex.baseReps}" placeholder="reps">
-      <button class="rm-btn" data-removeex="${ex.id}" title="Remover">×</button>
-    </div>`).join('');
+  const meta = dayCustom(day).dayMeta || {};
+  const rows = exercises.map(ex=>{
+    const m = (ex.method && ex.method!=='normal') ? ex.method : 'normal';
+    return `<div class="ex-edit-block">
+      <div class="ex-edit-row">
+        <input type="text" class="ex-edit-name" data-editfield="name" data-editex="${ex.id}" value="${esc(ex.name)}">
+        <input type="text" inputmode="numeric" class="small" data-editfield="baseSets" data-editex="${ex.id}" value="${esc(ex.baseSets)}" placeholder="séries">
+        <input type="text" class="small" data-editfield="baseReps" data-editex="${ex.id}" value="${esc(ex.baseReps)}" placeholder="reps">
+        <button class="rm-btn" data-removeex="${ex.id}" title="Remover">×</button>
+      </div>
+      <details class="adv-details" ${m!=='normal'?'open':''}>
+        <summary>Método avançado: ${METHODS[m].label}</summary>
+        <div class="adv-body">
+          <select data-editmethod="${ex.id}">${methodOptionsHtml(m)}</select>
+          ${m!=='normal' ? `<input type="text" data-editparts="${ex.id}" value="${esc((ex.parts||[]).join(' + '))}" placeholder="Exercício A + Exercício B">` : ''}
+        </div>
+      </details>
+    </div>`;
+  }).join('');
   const hasCustom = customTemplates[day.key] && customTemplates[day.key][editScope];
   return `
+    <div class="day-config">
+      <label class="lbl">Título do treino deste dia</label>
+      <input type="text" id="day-focus-input" value="${esc(meta.focus || day.focus)}" placeholder="Ex: Peito + Tríceps">
+      <label class="check-row"><input type="checkbox" id="day-rest-check" ${meta.rest?'checked':''}> Dia de descanso (sem treino)</label>
+    </div>
     <div class="scope-select-wrap">
-      <label>Aplicar edições a:</label>
+      <label>Aplicar edições dos exercícios a:</label>
       <select id="edit-scope-select">
         <option value="all" ${editScope==='all'?'selected':''}>Todas as 12 semanas</option>
         <option value="adaptacao" ${editScope==='adaptacao'?'selected':''}>Só ${MESO.adaptacao.label} (sem. 1-4)</option>
@@ -1157,34 +1541,44 @@ function renderExerciseEdit(day){
     </div>
     <div>${rows || '<div class="chart-empty">Nenhum exercício neste treino.</div>'}</div>
     <div class="add-ex-form">
-      <input type="text" id="new-ex-name" placeholder="Nome do novo exercício">
+      <input type="text" id="new-ex-name" placeholder="Nome do exercício">
       <input type="text" inputmode="numeric" id="new-ex-sets" placeholder="séries" style="width:60px">
       <input type="text" id="new-ex-reps" placeholder="reps" style="width:70px">
+      <select id="new-ex-method">${methodOptionsHtml('normal')}</select>
+      <input type="text" id="new-ex-parts" placeholder="Ex: Rosca direta + Rosca alternada" style="display:none;flex:1 1 100%;">
       <button class="add-ex-btn" id="add-ex-btn">+ Adicionar</button>
     </div>
+    <div class="adv-hint" id="new-ex-hint"></div>
+    <button type="button" class="restore-btn" id="clear-day-btn">Remover todos os exercícios deste dia</button>
     ${hasCustom ? `<button class="restore-btn" id="restore-day-btn">Restaurar treino padrão nesta seleção</button>` : ''}
     ${renderCardioEdit(day)}
   `;
 }
 
 function renderCardioEdit(day){
-  if(!day.cardio) return '';
-  if(day.cardio.isLongao){
-    const overrideArr = (customTemplates[day.key] && customTemplates[day.key].longaoKmOverride) || LONGAO_KM.slice();
-    const rows = overrideArr.map((km,i)=>`
+  const cd = effectiveCardio(day);
+  let html = `<div class="block-label">Corrida / cardio do dia</div>
+    <label class="check-row"><input type="checkbox" id="cardio-enabled" ${cd?'checked':''}> Incluir bloco de corrida/cardio neste dia</label>`;
+  if(!cd) return html;
+  const typeOpts = Object.keys(CARDIO_TYPES).map(k=>`<option value="${k}" ${cd.type===k?'selected':''}>${CARDIO_TYPES[k].label}</option>`).join('');
+  html += `<div class="cardio-edit-grid">
+      <div><label>Tipo de treino</label><select id="cardio-type">${typeOpts}</select></div>
+      <div><label>Nome do bloco</label><input type="text" id="cardio-label" value="${esc(cd.label)}"></div>
+    </div>`;
+  if(cd.isLongao){
+    html += `<div class="adv-hint">Km alvo de cada semana (edite livremente para sua rotina):</div>` + cd.longaoKm.map((km,i)=>`
       <div class="ex-edit-row">
         <span style="width:80px;font-size:12px;color:var(--ink-muted);">Semana ${i+1}</span>
-        <input type="text" inputmode="decimal" class="small" data-longaoweek="${i}" value="${km}" style="max-width:90px;">
+        <input type="text" inputmode="decimal" class="small" data-longaoweek="${i}" value="${esc(km)}" style="max-width:90px;">
       </div>`).join('');
-    return `<div class="block-label">Longão — km alvo por semana (edite livremente pra sua rotina)</div>${rows}`;
+  } else {
+    html += `<div class="adv-hint">Meta do treino em cada fase (vale para as 12 semanas):</div>
+    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Introdução</span><input type="text" class="ex-edit-name" data-cardiophase="adaptacao" value="${esc(cd.target.adaptacao)}"></div>
+    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Volume</span><input type="text" class="ex-edit-name" data-cardiophase="volume" value="${esc(cd.target.volume)}"></div>
+    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Intensidade</span><input type="text" class="ex-edit-name" data-cardiophase="forca" value="${esc(cd.target.forca)}"></div>
+    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Deload</span><input type="text" class="ex-edit-name" data-cardiophase="deload" value="${esc(cd.target.deload)}"></div>`;
   }
-  const ov = (customTemplates[day.key] && customTemplates[day.key].cardioOverride) || day.cardio.target;
-  return `
-    <div class="block-label">${day.cardio.label} — meta por fase (vale para as 12 semanas)</div>
-    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Introdução</span><input type="text" class="ex-edit-name" data-cardiophase="adaptacao" value="${ov.adaptacao||''}"></div>
-    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Volume</span><input type="text" class="ex-edit-name" data-cardiophase="volume" value="${ov.volume||''}"></div>
-    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Intensidade</span><input type="text" class="ex-edit-name" data-cardiophase="forca" value="${ov.forca||''}"></div>
-    <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Deload</span><input type="text" class="ex-edit-name" data-cardiophase="deload" value="${ov.deload||''}"></div>`;
+  return html;
 }
 
 function renderTotals(day, wk){
@@ -1207,44 +1601,59 @@ function renderCardio(cardio, wk, dayKey){
   if(cardio.isLongao){
     return `
     <div class="cardio-card">
-      <div class="ctitle">${cardio.label}</div>
+      <div class="ctitle">${esc(cardio.label)}</div>
       <div class="ctarget">Alvo: ${cardioTarget(cardio, wk, dayKey)}</div>
       <div class="cardio-inputs">
-        <div><label>Km feitos</label><input type="text" inputmode="decimal" data-cardio="${cardio.id}" data-cfield="km" value="${log.km||''}" placeholder="km"></div>
-        <div><label>Tempo</label><input type="text" inputmode="decimal" data-cardio="${cardio.id}" data-cfield="tempo" value="${log.tempo||''}" placeholder="min"></div>
-        <div><label>Sensação</label><input type="text" data-cardio="${cardio.id}" data-cfield="sensacao" value="${log.sensacao||''}" placeholder="leve/médio/pesado"></div>
+        <div><label>Km feitos</label><input type="text" inputmode="decimal" data-cardio="${cardio.id}" data-cfield="km" value="${esc(log.km||'')}" placeholder="km"></div>
+        <div><label>Tempo</label><input type="text" inputmode="decimal" data-cardio="${cardio.id}" data-cfield="tempo" value="${esc(log.tempo||'')}" placeholder="min"></div>
+        <div><label>Sensação</label><input type="text" data-cardio="${cardio.id}" data-cfield="sensacao" value="${esc(log.sensacao||'')}" placeholder="leve/médio/pesado"></div>
       </div>
     </div>`;
   }
   return `
     <div class="cardio-card">
-      <div class="ctitle">${cardio.label}</div>
+      <div class="ctitle">${esc(cardio.label)}</div>
       <div class="ctarget">Alvo: ${cardioTarget(cardio, wk, dayKey)}</div>
       <div class="cardio-inputs">
-        <div><label>Feito</label><input type="text" data-cardio="${cardio.id}" data-cfield="feito" value="${log.feito||''}" placeholder="ex: completo"></div>
-        <div><label>Sensação</label><input type="text" data-cardio="${cardio.id}" data-cfield="sensacao" value="${log.sensacao||''}" placeholder="leve/médio/pesado"></div>
+        <div><label>Feito</label><input type="text" data-cardio="${cardio.id}" data-cfield="feito" value="${esc(log.feito||'')}" placeholder="ex: completo"></div>
+        <div><label>Sensação</label><input type="text" data-cardio="${cardio.id}" data-cfield="sensacao" value="${esc(log.sensacao||'')}" placeholder="leve/médio/pesado"></div>
       </div>
     </div>`;
+}
+
+function renderDayNotes(day, wk){
+  const val = (weekData.dayNotes && weekData.dayNotes[day.key]) || '';
+  const prev = prevWeekData && prevWeekData.dayNotes ? prevWeekData.dayNotes[day.key] : '';
+  return `<div class="day-notes">
+    <div class="retro-label">Observações e considerações do treino</div>
+    <textarea id="day-notes-text" placeholder="Como foi o treino? Sensações, dores, ajustes de carga, o que mudar na próxima vez...">${esc(val)}</textarea>
+    ${prev ? `<div class="prev-note-block"><strong>Semana ${wk.n-1}:</strong> ${esc(prev)}</div>` : ''}
+  </div>`;
 }
 
 function renderRetro(){
   return `
     <div class="retro">
       <div class="retro-label">Retro da semana — o que funcionou / o que ajustar</div>
-      <textarea id="retro-text" placeholder="Ex: consegui manter o RPE, mas a corrida de quarta ficou pesada demais...">${weekData.retro||''}</textarea>
+      <textarea id="retro-text" placeholder="Ex: consegui manter o RPE, mas a corrida de quarta ficou pesada demais...">${esc(weekData.retro||'')}</textarea>
     </div>`;
 }
 
 /* ---- Dashboard ---- */
 
-async function collectAllWeeks(){
-  const out = [];
-  for(let n=1;n<=12;n++){
-    try{
-      const raw = await kvGet(pk('week:'+n));
-      out.push(raw ? JSON.parse(raw) : null);
-    }catch(e){ out.push(null); }
+async function collectAllWeeks(force){
+  if(force || !weeksCache || weeksCache.program!==currentProgram){
+    const prog = currentProgram;
+    const data = await Promise.all(Array.from({length:12}, async (_,i)=>{
+      try{
+        const raw = await kvGet('prog:'+prog+':week:'+(i+1));
+        return raw ? JSON.parse(raw) : null;
+      }catch(e){ return null; }
+    }));
+    weeksCache = {program: prog, data};
   }
+  const out = weeksCache.data.slice();
+  if(weekData && weekData.logs) out[currentWeek-1] = weekData; // always use the live in-memory week
   return out;
 }
 
@@ -1325,12 +1734,18 @@ async function buildDashboardCharts(){
     ${tonnageSvg || '<div class="chart-empty">Sem registros ainda.</div>'}
   </div>`;
 
-  const longaoPoints = all.map(w => ({y: w && w.cardio && w.cardio['dom_longao'] ? w.cardio['dom_longao'].km : null}));
+  const lgIds = longaoCardioIds();
+  const longaoPoints = all.map(w=>{
+    if(!w || !w.cardio) return {y:null};
+    let tot = 0, any = false;
+    lgIds.forEach(id=>{ const v = parseFloat(w.cardio[id] && w.cardio[id].km); if(v){ tot += v; any = true; } });
+    return {y: any ? Math.round(tot*10)/10 : null};
+  });
   const longaoSvg = lineChartSVG(longaoPoints, {color:'#3E5C78'});
   html += `<div class="chart-block">
     <h3>Longão</h3>
     <div class="chart-sub">Distância percorrida (km) por semana</div>
-    ${longaoSvg || '<div class="chart-empty">Sem registros ainda — logue os km do domingo para ver a curva.</div>'}
+    ${longaoSvg || '<div class="chart-empty">Sem registros ainda — logue os km do longão para ver a curva.</div>'}
   </div>`;
 
   el.innerHTML = html;
@@ -1357,6 +1772,7 @@ async function handleImportFile(e){
       customTemplates = payload.templates_personalizados;
       await kvSet(pk('templates'), JSON.stringify(customTemplates));
     }
+    weeksCache = null;
     await loadWeek(currentWeek);
     await loadPrevWeek(currentWeek);
     render();
@@ -1390,16 +1806,16 @@ async function exportData(){
 
 function renderPlano(wk){
   let rows = '';
-  const overrideArr = customTemplates['dom'] && customTemplates['dom'].longaoKmOverride;
   for(let n=1;n<=12;n++){
     const w = weekInfo(n);
-    const km = (overrideArr && overrideArr[n-1]!=null && overrideArr[n-1]!=='') ? overrideArr[n-1] : LONGAO_KM[n-1];
+    const kmv = longaoKmFor(n);
+    const km = (kmv===null ? '—' : kmv);
     rows += `<tr class="${n===wk.n?'current':''}">
       <td class="num">${n}</td>
       <td>${w.meso.label}</td>
       <td>${w.isDeload?'Deload':'Estímulo'}</td>
       <td>${w.isDeload?'-20% carga · -40% volume':w.meso.note}</td>
-      <td class="num">${km} km</td>
+      <td class="num">${km==='—' ? '—' : km+' km'}</td>
     </tr>`;
   }
   return `
@@ -1480,7 +1896,7 @@ function renderUndoToast(){
   if(!el) return;
   if(!pendingUndo){ el.classList.remove('show'); el.innerHTML=''; return; }
   el.classList.add('show');
-  el.innerHTML = `<span>Exercício removido</span><button id="undo-btn">Desfazer</button>`;
+  el.innerHTML = `<span>${esc(pendingUndo.message||'Exercício removido')}</span><button id="undo-btn">Desfazer</button>`;
   document.getElementById('undo-btn')?.addEventListener('click', ()=>{
     if(pendingUndo){
       clearTimeout(pendingUndo.timeoutId);
@@ -1493,33 +1909,53 @@ function renderUndoToast(){
 
 /* ============================= PR (recorde pessoal) ============================= */
 
-async function bestHistoricalE1RM(exId, excludeWeek){
+async function refreshPRBadges(day, wk){
   const all = await collectAllWeeks();
-  let best = 0;
+  const best = {};
   all.forEach((w, i)=>{
-    if(!w || !w.logs || (i+1)===excludeWeek) return;
-    const log = w.logs[exId];
-    if(!log) return;
-    const b = bestWorkSet(log.sets);
-    if(b){ const v = epley1RM(b.carga, b.reps); if(v && v>best) best = v; }
+    if(!w || !w.logs || (i+1)===wk.n) return;
+    Object.keys(w.logs).forEach(exId=>{
+      const log = w.logs[exId];
+      const b = log ? bestWorkSet(log.sets) : null;
+      if(!b) return;
+      const v = epley1RM(b.carga, b.reps);
+      if(v && v > (best[exId]||0)) best[exId] = v;
+    });
   });
-  return best;
+  histBest = best;
+  if(editingDay || activeTab!=='sprint') return;
+  document.querySelectorAll('[id^="e1rm-"]').forEach(el=>{
+    updateE1RMDisplay(el.id.slice(5));
+  });
 }
 
 /* ============================= SHARE ============================= */
 
 async function shareDaySummary(day, wk){
   const exercises = getDayExercises(day, wk);
-  let lines = [`${day.label} — ${day.focus} (Semana ${wk.n}/12)`];
+  let lines = [`${day.label} — ${dayFocus(day)} (Semana ${wk.n}/12)`];
   exercises.forEach(ex=>{
     const log = weekData.logs[ex.id];
     if(!log || !Array.isArray(log.sets) || log.sets.length===0) return;
+    if(isMethodEx(ex)){
+      let vol = 0; log.sets.forEach(x=>{ vol += setStats(x, ex).vol; });
+      lines.push(`• ${METHODS[ex.method].label} — ${ex.name}: ${log.sets.length} séries${vol ? ', '+Math.round(vol)+'kg de volume' : ''}`);
+      return;
+    }
     const best = bestWorkSet(log.sets);
     if(best) lines.push(`• ${ex.name}: ${log.sets.length} séries, melhor ${best.carga}kg×${best.reps}`);
   });
+  const cd = effectiveCardio(day);
+  if(cd){
+    const cl = weekData.cardio[cd.id] || {};
+    const bits = [cl.km ? cl.km+' km' : '', cl.tempo ? cl.tempo+' min' : '', cl.feito || ''].filter(Boolean);
+    if(bits.length) lines.push(`• ${cd.label}: ${bits.join(' · ')}`);
+  }
   const t = computeSessionTotals(day, wk);
   const totalVol = t.workVolume+t.warmVolume, totalSets = t.workSets+t.warmSets;
-  lines.push(`Total: ${totalSets} séries · ${totalVol}kg`);
+  if(totalSets) lines.push(`Total: ${totalSets} séries · ${totalVol}kg`);
+  const note = weekData.dayNotes && weekData.dayNotes[day.key];
+  if(note && String(note).trim()) lines.push('Obs: ' + String(note).trim());
   const text = lines.join('\n');
   if(navigator.share){
     try{ await navigator.share({title:'Meu treino', text}); }catch(e){}
@@ -1539,7 +1975,12 @@ function updateE1RMDisplay(exId){
   const log = weekData.logs[exId];
   const best = log ? bestWorkSet(log.sets) : null;
   const val = best ? epley1RM(best.carga, best.reps) : null;
-  el.textContent = val ? `e1RM ≈ ${val}kg` : '';
+  el.textContent = val ? ('e1RM ≈ ' + val + 'kg') : '';
+  const pr = document.getElementById('pr-'+exId);
+  if(pr){
+    const hist = histBest[exId] || 0;
+    pr.innerHTML = (val && hist>0 && val>hist) ? '<span class="pr-badge">🏆 PR</span>' : '';
+  }
 }
 function updateSummaryChip(exId){
   const el = document.getElementById('chip-'+exId);
@@ -1598,9 +2039,7 @@ function attachEvents(wk){
   document.querySelectorAll('[data-addset]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const exId = btn.dataset.addset;
-      if(!weekData.logs[exId]) weekData.logs[exId] = {sets:[], obs:''};
-      if(!Array.isArray(weekData.logs[exId].sets)) weekData.logs[exId].sets = [];
-      weekData.logs[exId].sets.push({tipo:'trabalho', carga:'', reps:'', rpe:''});
+      addSetTo(exId);
       expandedEx[exId] = true;
       scheduleSave();
       render();
@@ -1612,7 +2051,7 @@ function attachEvents(wk){
       const log = weekData.logs[exId];
       if(!log || !Array.isArray(log.sets) || !log.sets.length) return;
       const last = log.sets[log.sets.length-1];
-      log.sets.push(Object.assign({}, last));
+      log.sets.push(JSON.parse(JSON.stringify(last)));
       expandedEx[exId] = true;
       scheduleSave();
       render();
@@ -1620,21 +2059,32 @@ function attachEvents(wk){
   });
   document.querySelectorAll('[data-step]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const [field, deltaStr, exId, idxStr] = btn.dataset.step.split(':');
+      const [field, deltaStr, exId, idxStr, partStr] = btn.dataset.step.split(':');
       const idx = parseInt(idxStr);
       const delta = parseFloat(deltaStr);
+      const hasPart = (partStr!==undefined);
       if(!weekData.logs[exId]) weekData.logs[exId] = {sets:[], obs:''};
       if(!weekData.logs[exId].sets[idx]) weekData.logs[exId].sets[idx] = {tipo:'trabalho'};
-      const cur = parseFloat(weekData.logs[exId].sets[idx][field]) || 0;
+      const sObj = weekData.logs[exId].sets[idx];
+      let target = sObj;
+      if(hasPart){
+        if(!Array.isArray(sObj.parts)) sObj.parts = [];
+        const pi = parseInt(partStr);
+        if(!sObj.parts[pi]) sObj.parts[pi] = {carga:'', reps:''};
+        target = sObj.parts[pi];
+      }
+      const cur = parseFloat(target[field]) || 0;
       let next = cur + delta;
       next = field==='reps' ? Math.max(0, Math.round(next)) : Math.max(0, Math.round(next*10)/10);
-      weekData.logs[exId].sets[idx][field] = String(next);
+      target[field] = String(next);
+      autoFillRPE(exId, idx);
       scheduleSave();
       updateE1RMDisplay(exId);
       updateSummaryChip(exId);
       updateTotalsDisplay();
-      const inp = document.querySelector(`input[data-setex="${exId}"][data-setidx="${idx}"][data-setfield="${field}"]`);
-      if(inp) inp.value = weekData.logs[exId].sets[idx][field];
+      const sel = 'input[data-setex="'+exId+'"][data-setidx="'+idx+'"][data-setfield="'+field+'"]' + (hasPart ? '[data-partidx="'+partStr+'"]' : ':not([data-partidx])');
+      const inp = document.querySelector(sel);
+      if(inp) inp.value = target[field];
     });
   });
   document.querySelectorAll('[data-removeset]').forEach(btn=>{
@@ -1654,7 +2104,13 @@ function attachEvents(wk){
       const [exId, idxStr] = btn.dataset.toggletype.split(':');
       const idx = parseInt(idxStr);
       const s = weekData.logs[exId] && weekData.logs[exId].sets[idx];
-      if(s) s.tipo = (s.tipo==='aquecimento') ? 'trabalho' : 'aquecimento';
+      if(s){
+        const order = ['trabalho','aquecimento','drop'];
+        s.tipo = order[(order.indexOf(s.tipo||'trabalho')+1) % 3];
+        s.rpe = '';
+        s.rpeAuto = true;
+        if(s.tipo!=='aquecimento') autoFillRPE(exId, idx);
+      }
       expandedEx[exId] = true;
       scheduleSave();
       render();
@@ -1665,7 +2121,22 @@ function attachEvents(wk){
       const exId = inp.dataset.setex, idx = parseInt(inp.dataset.setidx), field = inp.dataset.setfield;
       if(!weekData.logs[exId]) weekData.logs[exId] = {sets:[], obs:''};
       if(!weekData.logs[exId].sets[idx]) weekData.logs[exId].sets[idx] = {tipo:'trabalho'};
-      weekData.logs[exId].sets[idx][field] = inp.value;
+      const sObj = weekData.logs[exId].sets[idx];
+      const pidx = inp.dataset.partidx;
+      if(pidx!==undefined){
+        if(!Array.isArray(sObj.parts)) sObj.parts = [];
+        if(!sObj.parts[pidx]) sObj.parts[pidx] = {carga:'', reps:''};
+        sObj.parts[pidx][field] = inp.value;
+      } else {
+        sObj[field] = inp.value;
+      }
+      if(field==='rpe'){
+        const ss = weekData.logs[exId].sets[idx];
+        ss.rpeAuto = (inp.value.trim()==='');
+        inp.classList.toggle('auto', ss.rpeAuto);
+      } else if(field==='carga' || field==='reps'){
+        autoFillRPE(exId, idx);
+      }
       scheduleSave();
       updateE1RMDisplay(exId);
       updateSummaryChip(exId);
@@ -1697,27 +2168,100 @@ function attachEvents(wk){
     const name = document.getElementById('new-ex-name').value;
     const sets = document.getElementById('new-ex-sets').value;
     const reps = document.getElementById('new-ex-reps').value;
-    addExercise(day, name, sets, reps, editScope);
+    const method = document.getElementById('new-ex-method') ? document.getElementById('new-ex-method').value : 'normal';
+    const partsStr = document.getElementById('new-ex-parts') ? document.getElementById('new-ex-parts').value : '';
+    addExercise(day, name, sets, reps, editScope, method, partsStr);
+  });
+  document.getElementById('new-ex-method')?.addEventListener('change', (e)=>{
+    const m = e.target.value;
+    const pin = document.getElementById('new-ex-parts');
+    const hint = document.getElementById('new-ex-hint');
+    if(pin) pin.style.display = (m==='normal') ? 'none' : 'block';
+    if(hint) hint.textContent = (m==='normal') ? '' : (METHODS[m].label + ': ' + METHODS[m].hint + '. Separe os exercícios com "+".');
+  });
+  document.getElementById('clear-day-btn')?.addEventListener('click', ()=>{
+    clearDayExercises(DAY_TEMPLATES[activeDayIdx], editScope);
+  });
+  document.getElementById('day-focus-input')?.addEventListener('change', (e)=>{
+    ensureDayMeta(DAY_TEMPLATES[activeDayIdx]).focus = e.target.value.trim();
+    saveTemplates();
+  });
+  document.getElementById('day-rest-check')?.addEventListener('change', (e)=>{
+    ensureDayMeta(DAY_TEMPLATES[activeDayIdx]).rest = e.target.checked;
+    saveTemplates();
+    render();
+  });
+  document.querySelectorAll('[data-editmethod]').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      const day = DAY_TEMPLATES[activeDayIdx];
+      const exId = sel.dataset.editmethod, m = sel.value;
+      const ex = getDayExercisesForScope(day, editScope).find(e=>e.id===exId);
+      if(!ex) return;
+      updateTemplateField(day, exId, 'method', m, editScope);
+      if(m==='normal'){
+        updateTemplateField(day, exId, 'parts', [], editScope);
+      } else {
+        let parts = parseParts(m, (ex.parts && ex.parts.length) ? ex.parts.join(' + ') : ex.name);
+        while(parts.length < METHODS[m].min) parts.push('Exercício '+(parts.length+1));
+        updateTemplateField(day, exId, 'parts', parts, editScope);
+      }
+      render();
+    });
+  });
+  document.querySelectorAll('[data-editparts]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const day = DAY_TEMPLATES[activeDayIdx];
+      const exId = inp.dataset.editparts;
+      const ex = getDayExercisesForScope(day, editScope).find(e=>e.id===exId);
+      if(!ex || !ex.method) return;
+      const parts = parseParts(ex.method, inp.value);
+      if(parts.length < METHODS[ex.method].min){
+        alert('Informe pelo menos '+METHODS[ex.method].min+' itens separados por "+".');
+        render();
+        return;
+      }
+      updateTemplateField(day, exId, 'parts', parts, editScope);
+      render();
+    });
   });
   document.getElementById('restore-day-btn')?.addEventListener('click', ()=>{
     const day = DAY_TEMPLATES[activeDayIdx];
     if(confirm('Restaurar este treino para o padrão original nesta seleção de semanas?')) restoreDay(day, editScope);
   });
+  document.getElementById('cardio-enabled')?.addEventListener('change', (e)=>{
+    const cfg = ensureCardioCfg(DAY_TEMPLATES[activeDayIdx]);
+    cfg.enabled = e.target.checked;
+    saveTemplates();
+    render();
+  });
+  document.getElementById('cardio-type')?.addEventListener('change', (e)=>{
+    const cfg = ensureCardioCfg(DAY_TEMPLATES[activeDayIdx]);
+    const old = cfg.type, nt = e.target.value;
+    const oldLabel = (CARDIO_TYPES[old]||{}).label;
+    cfg.type = nt;
+    if(!cfg.label || cfg.label===oldLabel) cfg.label = CARDIO_TYPES[nt].label;
+    if(nt==='longao'){ if(!Array.isArray(cfg.longaoKm)) cfg.longaoKm = LONGAO_KM.slice(); }
+    else if(CARDIO_TYPES[nt].defaults){ cfg.target = Object.assign({}, CARDIO_TYPES[nt].defaults); }
+    saveTemplates();
+    render();
+  });
+  document.getElementById('cardio-label')?.addEventListener('change', (e)=>{
+    const cfg = ensureCardioCfg(DAY_TEMPLATES[activeDayIdx]);
+    cfg.label = e.target.value.trim() || CARDIO_TYPES[cfg.type].label;
+    saveTemplates();
+  });
   document.querySelectorAll('[data-cardiophase]').forEach(inp=>{
     inp.addEventListener('change', ()=>{
-      const day = DAY_TEMPLATES[activeDayIdx];
-      if(!customTemplates[day.key]) customTemplates[day.key] = {};
-      if(!customTemplates[day.key].cardioOverride) customTemplates[day.key].cardioOverride = Object.assign({}, day.cardio.target);
-      customTemplates[day.key].cardioOverride[inp.dataset.cardiophase] = inp.value;
+      const cfg = ensureCardioCfg(DAY_TEMPLATES[activeDayIdx]);
+      cfg.target[inp.dataset.cardiophase] = inp.value;
       saveTemplates();
     });
   });
   document.querySelectorAll('[data-longaoweek]').forEach(inp=>{
     inp.addEventListener('change', ()=>{
-      const day = DAY_TEMPLATES[activeDayIdx];
-      if(!customTemplates[day.key]) customTemplates[day.key] = {};
-      if(!customTemplates[day.key].longaoKmOverride) customTemplates[day.key].longaoKmOverride = LONGAO_KM.slice();
-      customTemplates[day.key].longaoKmOverride[parseInt(inp.dataset.longaoweek)] = inp.value;
+      const cfg = ensureCardioCfg(DAY_TEMPLATES[activeDayIdx]);
+      if(!Array.isArray(cfg.longaoKm)) cfg.longaoKm = LONGAO_KM.slice();
+      cfg.longaoKm[parseInt(inp.dataset.longaoweek)] = inp.value;
       saveTemplates();
     });
   });
@@ -1742,16 +2286,13 @@ function attachEvents(wk){
     showAuthPanel = !showAuthPanel;
     render();
   });
-  document.getElementById('auth-send-btn')?.addEventListener('click', async ()=>{
-    const emailInp = document.getElementById('auth-email');
-    const msgEl = document.getElementById('auth-message');
-    const email = emailInp ? emailInp.value.trim() : '';
-    if(!email){ if(msgEl) msgEl.textContent = 'Digite um e-mail válido.'; return; }
-    if(msgEl) msgEl.textContent = 'Enviando...';
-    if(!sb){ if(msgEl) msgEl.textContent = 'Sincronização indisponível no momento.'; return; }
-    const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: window.location.href.split('#')[0] } });
-    if(msgEl) msgEl.textContent = error ? ('Erro: '+error.message) : 'Link enviado! Confira seu e-mail e abra o link no mesmo aparelho.';
+  document.querySelectorAll('[data-authmode]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ authMode = btn.dataset.authmode; render(); });
   });
+  document.getElementById('auth-submit-btn')?.addEventListener('click', handleAuthSubmit);
+  document.getElementById('auth-password')?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') handleAuthSubmit(); });
+  document.getElementById('auth-forgot-btn')?.addEventListener('click', handleForgotPassword);
+  document.getElementById('auth-changepass-btn')?.addEventListener('click', handleChangePassword);
   document.getElementById('logout-btn')?.addEventListener('click', async ()=>{
     if(sb) await sb.auth.signOut();
     showAuthPanel = false;
@@ -1789,6 +2330,12 @@ function attachEvents(wk){
   document.getElementById('share-day-btn')?.addEventListener('click', ()=>{
     const day = DAY_TEMPLATES[activeDayIdx];
     shareDaySummary(day, wk);
+  });
+  document.getElementById('day-notes-text')?.addEventListener('input', (e)=>{
+    const day = DAY_TEMPLATES[activeDayIdx];
+    if(!weekData.dayNotes) weekData.dayNotes = {};
+    weekData.dayNotes[day.key] = e.target.value;
+    scheduleSave();
   });
   document.getElementById('retro-text')?.addEventListener('input', (e)=>{
     weekData.retro = e.target.value;
