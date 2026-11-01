@@ -589,6 +589,10 @@ async function initAuth(){
 
 async function reloadAllAndRender(){
   weeksCache = null;
+  histBest = {};
+  editingDay = false;
+  expandedEx = {};
+  await loadDirty();
   await loadPrograms();
   await loadMeta();
   await loadTemplates();
@@ -620,8 +624,47 @@ function localKey(key){ return authUser ? ('u:'+authUser.id+':'+key) : key; }
 function legacyOwner(){ try{ return localStorage.getItem('treino-legacy-owner'); }catch(e){ return null; } }
 function claimLegacy(uid){ try{ localStorage.setItem('treino-legacy-owner', uid); }catch(e){} }
 
+let dirtyKeys = new Set();   // keys written locally that the cloud has not confirmed yet
+let flushing = false;
+
+async function loadDirty(){
+  dirtyKeys = new Set();
+  if(!authUser) return;
+  try{
+    const raw = await idbGetRaw(localKey('__dirty__'));
+    if(raw) dirtyKeys = new Set(JSON.parse(raw));
+  }catch(e){}
+}
+function persistDirty(){
+  if(authUser) idbSetRaw(localKey('__dirty__'), JSON.stringify([...dirtyKeys])).catch(()=>{});
+}
+async function cloudSetTracked(key, value){
+  if(!dirtyKeys.has(key)){ dirtyKeys.add(key); persistDirty(); }   // mark first: survives an app close mid-request
+  const ok = await cloudSet(key, value);
+  if(ok){ dirtyKeys.delete(key); persistDirty(); }
+  return ok;
+}
+async function flushDirty(){
+  if(!authUser || flushing || dirtyKeys.size===0) return;
+  flushing = true;
+  try{
+    for(const key of [...dirtyKeys]){
+      const v = await idbGetRaw(localKey(key));
+      if(v===null){ dirtyKeys.delete(key); continue; }
+      const ok = await cloudSet(key, v);
+      if(ok) dirtyKeys.delete(key); else break;
+    }
+    persistDirty();
+  } finally { flushing = false; }
+}
+
 async function kvGet(key){
   if(authUser){
+    // edits made offline are newer than whatever the cloud has: keep them and push when possible
+    if(dirtyKeys.has(key)){
+      const pending = await idbGetRaw(localKey(key));
+      if(pending !== null){ flushDirty(); return pending; }
+    }
     const cloudVal = await cloudGet(key);
     if(cloudVal !== null){
       idbSetRaw(localKey(key), cloudVal).catch(()=>{});
@@ -641,7 +684,7 @@ async function kvGet(key){
 }
 async function kvSet(key, value){
   const localOk = await idbSetRaw(localKey(key), value);
-  if(authUser) cloudSet(key, value); // fire-and-forget; local write already covers offline/instant UI
+  if(authUser) cloudSetTracked(key, value); // fire-and-forget; local write already covers offline/instant UI
   return localOk;
 }
 
@@ -1230,7 +1273,7 @@ function renderAuthPanel(){
     <input type="email" id="auth-email" class="auth-input" placeholder="seu@email.com" autocomplete="email" inputmode="email">
     <input type="password" id="auth-password" class="auth-input" placeholder="Senha (mín. 6 caracteres)" autocomplete="${signup?'new-password':'current-password'}">
     <button class="add-ex-btn" id="auth-submit-btn" style="padding:10px 16px;width:100%;">${signup?'Criar conta':'Entrar'}</button>
-    ${signup ? '' : '<button type="button" class="link-btn" id="auth-forgot-btn">Esqueci minha senha</button>'}
+    ${signup ? '<div class="adv-hint">Anote sua senha. Para trocá-la depois: ☁️ → Alterar senha.</div>' : '<button type="button" class="link-btn" id="auth-forgot-btn">Esqueci minha senha</button>'}
     <div id="auth-message" style="font-size:12px;color:var(--ink-muted);margin-top:8px;"></div>
   </div>`;
 }
@@ -1242,9 +1285,9 @@ function translateAuthError(err){
   if(m.includes('invalid login credentials')) return 'E-mail ou senha incorretos. Se você ainda não definiu uma senha, use "Esqueci minha senha".';
   if(m.includes('email not confirmed')) return 'Este e-mail ainda não foi confirmado. Abra o e-mail de confirmação (veja também o spam) ou peça ao administrador para liberar o acesso.';
   if(m.includes('already registered') || m.includes('already been registered')) return 'Este e-mail já tem conta. Use "Entrar" ou "Esqueci minha senha".';
-  if(m.includes('password should be') || m.includes('weak password')) return 'Senha fraca ou curta demais. Use pelo menos 6 caracteres.';
-  if(m.includes('email rate limit') || m.includes('over_email_send_rate_limit')) return 'Limite de envio de e-mails atingido. Aguarde cerca de 1 hora ou peça ao administrador para configurar o envio de e-mails (SMTP).';
-  if(m.includes('error sending')) return 'Não foi possível enviar o e-mail. O envio de e-mails do sistema precisa ser configurado pelo administrador (SMTP no Supabase).';
+  if(m.includes('password should be') || m.includes('weak password')){ const mm = raw.match(/at least (\d+)/i); return 'Senha curta ou fraca demais. Use pelo menos ' + (mm ? mm[1] : '6') + ' caracteres.'; }
+  if(m.includes('email rate limit') || m.includes('over_email_send_rate_limit')) return 'Limite de envio de e-mails atingido. Aguarde cerca de 1 hora ou peça ao administrador para redefinir sua senha.';
+  if(m.includes('error sending')) return 'Não foi possível enviar o e-mail. Peça ao administrador para ajustar sua conta ou redefinir sua senha.';
   if(m.includes('rate limit') || m.includes('too many') || status===429) return 'Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.';
   if(m.includes('signups not allowed') || m.includes('signup is disabled') || m.includes('signups are disabled')) return 'Novos cadastros estão desativados.';
   if(m.includes('reauthentication') || m.includes('recently')) return 'Por segurança, saia da conta, entre de novo e repita a alteração de senha.';
@@ -1293,7 +1336,14 @@ async function handleForgotPassword(){
   say('Enviando...');
   try{
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl() });
-    say(error ? translateAuthError(error) : 'Enviamos um link para redefinir a senha. Abra-o no mesmo aparelho e defina a nova senha.');
+    if(error){
+      const mm = (error.message||'').toLowerCase();
+      if(mm.includes('error sending') || mm.includes('rate limit') || mm.includes('not authorized') || error.status===500){
+        say('A recuperação por e-mail não está disponível neste app. Peça ao administrador para redefinir sua senha. Depois de entrar, você pode trocá-la em ☁️ → Alterar senha.');
+      } else { say(translateAuthError(error)); }
+    } else {
+      say('Enviamos um link para redefinir a senha. Abra-o no mesmo aparelho e defina a nova senha.');
+    }
   }catch(e){ say(translateAuthError(e)); }
 }
 
@@ -2432,12 +2482,16 @@ if('serviceWorker' in navigator){
   applyTheme();
   if(window.supabase) initSupabase();
   await initAuth();
+  await loadDirty();
   await loadPrograms();
   await loadMeta();
   await loadTemplates();
   await loadWeek(currentWeek);
   await loadPrevWeek(currentWeek);
   render();
+  flushDirty();
+  window.addEventListener('online', ()=>{ flushDirty(); });
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') flushDirty(); });
 })();
 </script>
 </body>
