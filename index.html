@@ -317,6 +317,7 @@
   .day-chip.rest{opacity:.6;}
   .note-dot{font-size:10px;margin-left:3px;color:var(--ink-faint);}
   @media (max-width:520px){ .cardio-edit-grid{grid-template-columns:1fr;} }
+  .auth-flash{font-size:12.5px;color:var(--green);background:var(--green-soft);border-radius:var(--radius);padding:8px 10px;margin-bottom:10px;}
 </style>
 </head>
 <body>
@@ -477,6 +478,10 @@ let showProgramPanel = false;
 let showAuthPanel = false;
 let authMode = 'login';
 let recoveryMode = false;
+let showChangePass = false;
+let authFlash = '';
+let authInitDone = false;
+const URL_IS_RECOVERY = /type=recovery/.test((window.location.hash||'') + (window.location.search||''));
 let selectedForGroup = new Set();
 let histBest = {};
 let weeksCache = null;
@@ -562,20 +567,24 @@ function initSupabase(){
 
 async function initAuth(){
   if(!sb) return;
-  const { data } = await sb.auth.getSession();
-  authUser = data && data.session ? data.session.user : null;
-  authReady = true;
+  if(URL_IS_RECOVERY){ recoveryMode = true; showAuthPanel = true; }
+  // subscribe BEFORE reading the session so no event (e.g. PASSWORD_RECOVERY) is missed
   sb.auth.onAuthStateChange((event, session)=>{
     const was = authUser;
     authUser = session ? session.user : null;
     if(event==='PASSWORD_RECOVERY'){ recoveryMode = true; showAuthPanel = true; }
+    if(!authInitDone || event==='INITIAL_SESSION') return;
+    if(authUser && !was && !recoveryMode){ showAuthPanel = false; showChangePass = false; authFlash = ''; }
     if(!!was !== !!authUser){
-      // logged in or out — reload current data from the right source and redraw
-      reloadAllAndRender();
+      setTimeout(()=>{ reloadAllAndRender(); }, 0);
     } else {
-      render();
+      setTimeout(()=>{ render(); }, 0);
     }
   });
+  const { data } = await sb.auth.getSession();
+  authUser = data && data.session ? data.session.user : authUser;
+  authReady = true;
+  authInitDone = true;
 }
 
 async function reloadAllAndRender(){
@@ -607,18 +616,31 @@ async function cloudSet(key, value){
   }catch(e){ return false; }
 }
 
+function localKey(key){ return authUser ? ('u:'+authUser.id+':'+key) : key; }
+function legacyOwner(){ try{ return localStorage.getItem('treino-legacy-owner'); }catch(e){ return null; } }
+function claimLegacy(uid){ try{ localStorage.setItem('treino-legacy-owner', uid); }catch(e){} }
+
 async function kvGet(key){
   if(authUser){
     const cloudVal = await cloudGet(key);
     if(cloudVal !== null){
-      idbSetRaw(key, cloudVal).catch(()=>{});
+      idbSetRaw(localKey(key), cloudVal).catch(()=>{});
       return cloudVal;
     }
+    const mine = await idbGetRaw(localKey(key));
+    if(mine !== null) return mine;
+    // data saved on this device before any login: only the first account to sign in here may inherit it
+    const owner = legacyOwner();
+    if(!owner || owner===authUser.id){
+      const legacy = await idbGetRaw(key);
+      if(legacy !== null){ claimLegacy(authUser.id); return legacy; }
+    }
+    return null;
   }
   return await idbGetRaw(key);
 }
 async function kvSet(key, value){
-  const localOk = await idbSetRaw(key, value);
+  const localOk = await idbSetRaw(localKey(key), value);
   if(authUser) cloudSet(key, value); // fire-and-forget; local write already covers offline/instant UI
   return localOk;
 }
@@ -631,6 +653,8 @@ let programs = [{id:'default', name:'Ciclo 1', startDate:null, createdAt:Date.no
 function pk(key){ return 'prog:'+currentProgram+':'+key; }
 
 async function loadPrograms(){
+  programs = [{id:'default', name:'Ciclo 1', startDate:null, createdAt:Date.now()}];
+  currentProgram = 'default';
   const raw = await kvGet('__programs__');
   if(raw){
     try{
@@ -767,6 +791,7 @@ function flashStatus(ok, message){
   window.__st = setTimeout(()=>el.classList.remove('show'), ok?1200:9000);
 }
 async function loadMeta(){
+  currentWeek = 1;
   const raw = await kvGet(pk('meta'));
   if(raw){
     try{ const m = JSON.parse(raw); currentWeek = m.currentWeek || 1; }catch(e){}
@@ -1179,12 +1204,19 @@ function renderTopControls(){
 
 function renderAuthPanel(){
   if(authUser){
+    const showForm = recoveryMode || showChangePass;
     return `<div class="program-panel">
       <div style="font-size:13px;margin-bottom:10px;">${recoveryMode ? 'Defina sua nova senha abaixo.' : 'Conectado como <strong>'+esc(authUser.email)+'</strong> — seus dados sincronizam entre os aparelhos em que você fizer login.'}</div>
-      <div class="block-label" style="margin-top:6px;">${recoveryMode ? 'Nova senha' : 'Alterar senha'}</div>
-      <input type="password" id="auth-newpass" class="auth-input" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password">
-      <button class="add-ex-btn" id="auth-changepass-btn" style="padding:9px 14px;">Salvar nova senha</button>
-      <div id="auth-message" style="font-size:12px;color:var(--ink-muted);margin-top:8px;"></div>
+      ${authFlash ? `<div class="auth-flash">${esc(authFlash)}</div>` : ''}
+      ${showForm ? `
+        <div class="block-label" style="margin-top:6px;">Nova senha</div>
+        <input type="password" id="auth-newpass" class="auth-input" placeholder="Nova senha (mín. 6 caracteres)" autocomplete="new-password">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="add-ex-btn" id="auth-changepass-btn" style="padding:9px 14px;">Salvar nova senha</button>
+          ${recoveryMode ? '' : '<button type="button" class="link-btn" id="auth-cancelpass-btn">Cancelar</button>'}
+        </div>
+        <div id="auth-message" style="font-size:12px;color:var(--ink-muted);margin-top:8px;"></div>
+      ` : `<button type="button" class="export-btn" id="auth-showpass-btn">Alterar senha</button>`}
       <button class="restore-btn" id="logout-btn" style="margin-top:14px;">Sair desta conta</button>
     </div>`;
   }
@@ -1204,20 +1236,27 @@ function renderAuthPanel(){
 }
 
 function translateAuthError(err){
-  const m = (err && err.message ? err.message : String(err||'')).toLowerCase();
-  if(m.includes('invalid login credentials')) return 'E-mail ou senha incorretos. Se a conta foi criada por link de e-mail, use "Esqueci minha senha" para definir uma senha.';
-  if(m.includes('email not confirmed')) return 'Confirme seu e-mail antes de entrar (veja a caixa de entrada e o spam).';
-  if(m.includes('already registered')) return 'Este e-mail já tem conta. Use "Entrar" ou "Esqueci minha senha".';
+  const raw = (err && err.message) ? err.message : String(err||'');
+  const m = raw.toLowerCase();
+  const status = err && err.status ? err.status : '';
+  if(m.includes('invalid login credentials')) return 'E-mail ou senha incorretos. Se você ainda não definiu uma senha, use "Esqueci minha senha".';
+  if(m.includes('email not confirmed')) return 'Este e-mail ainda não foi confirmado. Abra o e-mail de confirmação (veja também o spam) ou peça ao administrador para liberar o acesso.';
+  if(m.includes('already registered') || m.includes('already been registered')) return 'Este e-mail já tem conta. Use "Entrar" ou "Esqueci minha senha".';
   if(m.includes('password should be') || m.includes('weak password')) return 'Senha fraca ou curta demais. Use pelo menos 6 caracteres.';
-  if(m.includes('rate limit') || m.includes('too many')) return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.';
-  if(m.includes('invalid email') || m.includes('unable to validate email')) return 'E-mail inválido.';
+  if(m.includes('email rate limit') || m.includes('over_email_send_rate_limit')) return 'Limite de envio de e-mails atingido. Aguarde cerca de 1 hora ou peça ao administrador para configurar o envio de e-mails (SMTP).';
+  if(m.includes('error sending')) return 'Não foi possível enviar o e-mail. O envio de e-mails do sistema precisa ser configurado pelo administrador (SMTP no Supabase).';
+  if(m.includes('rate limit') || m.includes('too many') || status===429) return 'Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.';
+  if(m.includes('signups not allowed') || m.includes('signup is disabled') || m.includes('signups are disabled')) return 'Novos cadastros estão desativados.';
+  if(m.includes('reauthentication') || m.includes('recently')) return 'Por segurança, saia da conta, entre de novo e repita a alteração de senha.';
   if(m.includes('same password') || m.includes('different from the old')) return 'A nova senha precisa ser diferente da atual.';
+  if(m.includes('invalid email') || m.includes('unable to validate email')) return 'E-mail inválido.';
+  if(m.includes('expired') || m.includes('invalid token') || m.includes('otp')) return 'O link expirou ou já foi usado. Peça um novo em "Esqueci minha senha".';
   if(m.includes('failed to fetch') || m.includes('network')) return 'Sem conexão. Verifique sua internet.';
-  return 'Erro: ' + (err && err.message ? err.message : 'tente novamente.');
+  return 'Erro: ' + raw + (status ? ' (código ' + status + ')' : '');
 }
 
 function authRedirectUrl(){
-  return window.location.href.split('#')[0].split('?')[0];
+  return window.location.href.split('#')[0].split('?')[0].replace(/index\.html$/, '');
 }
 
 async function handleAuthSubmit(){
@@ -1269,8 +1308,9 @@ async function handleChangePassword(){
     const { error } = await sb.auth.updateUser({ password: pass });
     if(error){ say(translateAuthError(error)); return; }
     recoveryMode = false;
-    const inp = document.getElementById('auth-newpass'); if(inp) inp.value = '';
-    say('Senha atualizada com sucesso.');
+    showChangePass = false;
+    authFlash = 'Senha atualizada com sucesso.';
+    render();
   }catch(e){ say(translateAuthError(e)); }
 }
 
@@ -2284,8 +2324,11 @@ function attachEvents(wk){
   });
   document.getElementById('auth-toggle-btn')?.addEventListener('click', ()=>{
     showAuthPanel = !showAuthPanel;
+    if(!showAuthPanel){ showChangePass = false; authFlash = ''; }
     render();
   });
+  document.getElementById('auth-showpass-btn')?.addEventListener('click', ()=>{ showChangePass = true; authFlash = ''; render(); });
+  document.getElementById('auth-cancelpass-btn')?.addEventListener('click', ()=>{ showChangePass = false; render(); });
   document.querySelectorAll('[data-authmode]').forEach(btn=>{
     btn.addEventListener('click', ()=>{ authMode = btn.dataset.authmode; render(); });
   });
