@@ -318,6 +318,21 @@
   .note-dot{font-size:10px;margin-left:3px;color:var(--ink-faint);}
   @media (max-width:520px){ .cardio-edit-grid{grid-template-columns:1fr;} }
   .auth-flash{font-size:12.5px;color:var(--green);background:var(--green-soft);border-radius:var(--radius);padding:8px 10px;margin-bottom:10px;}
+  .ex-edit-sub{display:flex;gap:8px;align-items:flex-start;}
+  .ex-edit-sub .adv-details{flex:1;min-width:0;}
+  .move-btns{display:flex;gap:6px;padding-top:3px;}
+  .move-btn{width:40px;height:34px;border:1px solid var(--line);background:var(--paper);color:var(--ink-muted);border-radius:4px;cursor:pointer;font-size:12px;}
+  .move-btn:disabled{opacity:.3;cursor:default;}
+  .method-summary{margin-top:10px;padding:10px;background:var(--paper);border-radius:var(--radius);font-size:12px;}
+  .msum-total{margin-bottom:6px;color:var(--ink);}
+  .msum-row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid var(--line);color:var(--ink-muted);}
+  .msum-empty{color:var(--ink-faint);}
+  .ref-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0 10px;font-size:13px;color:var(--ink-muted);}
+  .chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:2px;}
+  .metric-btns{display:flex;gap:4px;flex-wrap:wrap;}
+  .metric-btn{font-size:11px;font-weight:600;padding:7px 10px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink-muted);cursor:pointer;}
+  .metric-btn.on{background:var(--orange-soft);color:var(--orange);border-color:var(--orange);}
+  .ref-picker .check-row{margin:8px 0;}
 </style>
 </head>
 <body>
@@ -476,6 +491,8 @@ let saveTimer = null;
 let theme = 'light';
 let showProgramPanel = false;
 let showAuthPanel = false;
+let progSettings = {refs:null, metrics:{}};
+let showRefPicker = false;
 let authMode = 'login';
 let recoveryMode = false;
 let showChangePass = false;
@@ -724,6 +741,7 @@ async function createProgram(name, startDate){
   currentWeek = 1;
   activeDayIdx = 0;
   customTemplates = {};
+  progSettings = defaultSettings();
   await loadWeek(currentWeek);
   await loadPrevWeek(currentWeek);
   render();
@@ -791,7 +809,18 @@ async function loadTemplates(){
     const raw = await kvGet(pk('templates'));
     customTemplates = raw ? JSON.parse(raw) : {};
   }catch(e){ customTemplates = {}; }
+  await loadSettings();
 }
+function defaultSettings(){ return {refs:null, metrics:{}}; }
+async function loadSettings(){
+  progSettings = defaultSettings();
+  try{
+    const raw = await kvGet(pk('settings'));
+    if(raw){ const o = JSON.parse(raw); if(o && typeof o==='object') progSettings = Object.assign(defaultSettings(), o); }
+  }catch(e){}
+  if(!progSettings.metrics) progSettings.metrics = {};
+}
+async function saveSettings(){ await kvSet(pk('settings'), JSON.stringify(progSettings)); }
 async function saveTemplates(){
   await kvSet(pk('templates'), JSON.stringify(customTemplates));
 }
@@ -861,7 +890,25 @@ function getDayExercisesForScope(day, scopeKey){
   });
   list = list.concat(allScope.added || []);
   if(scopeKey!=='all') list = list.concat(mesoScope.added || []);
-  return list;
+  const orderArr = (scopeKey!=='all' && Array.isArray(mesoScope.order) && mesoScope.order.length) ? mesoScope.order : allScope.order;
+  return applyOrder(list, orderArr);
+}
+
+function applyOrder(list, orderArr){
+  if(!Array.isArray(orderArr) || !orderArr.length) return list;
+  const idx = id => { const i = orderArr.indexOf(id); return i<0 ? 1e6 : i; };
+  return list.map((ex,i)=>({ex,i})).sort((a,b)=> (idx(a.ex.id)-idx(b.ex.id)) || (a.i-b.i)).map(x=>x.ex);
+}
+function moveExercise(day, exId, dir, scopeKey){
+  const ids = getDayExercisesForScope(day, scopeKey).map(e=>e.id);
+  const i = ids.indexOf(exId), j = i + dir;
+  if(i<0 || j<0 || j>=ids.length) return;
+  const t = ids[i]; ids[i] = ids[j]; ids[j] = t;
+  if(!customTemplates[day.key]) customTemplates[day.key] = {};
+  if(!customTemplates[day.key][scopeKey]) customTemplates[day.key][scopeKey] = {};
+  customTemplates[day.key][scopeKey].order = ids;
+  saveTemplates();
+  render();
 }
 
 function getDayExercises(day, wk){
@@ -933,6 +980,39 @@ function findExercise(exId){
   }
   return null;
 }
+function methodStats(ex, log){
+  const parts = (ex && Array.isArray(ex.parts)) ? ex.parts : [];
+  const per = parts.map(n=>({name:n, reps:0, vol:0, maxLoad:0}));
+  let reps=0, vol=0, maxLoad=0, rounds=0;
+  (log && Array.isArray(log.sets) ? log.sets : []).forEach(st=>{
+    if(st.tipo==='aquecimento' || !Array.isArray(st.parts)) return;
+    let counted = false;
+    st.parts.forEach((p,i)=>{
+      if(!p || !per[i]) return;
+      const r = parseFloat(p.reps)||0, c = parseFloat(p.carga)||0;
+      if(!r) return;
+      counted = true;
+      per[i].reps += r; per[i].vol += c*r; if(c>per[i].maxLoad) per[i].maxLoad = c;
+      reps += r; vol += c*r; if(c>maxLoad) maxLoad = c;
+    });
+    if(counted) rounds++;
+  });
+  return {per, reps, vol:Math.round(vol), maxLoad, rounds};
+}
+function methodSummaryHtml(ex, log){
+  const m = methodStats(ex, log);
+  if(!m.rounds) return '<div class="msum-empty">Registre as séries para ver o volume e a carga trabalhados neste método.</div>';
+  const rows = m.per.map(p=>'<div class="msum-row"><span>'+esc(p.name)+'</span><span class="num">'+Math.round(p.vol)+' kg · '+p.reps+' reps · máx. '+p.maxLoad+' kg</span></div>').join('');
+  return '<div class="msum-total">Volume de trabalho: <strong>'+m.vol+' kg</strong> · '+m.reps+' reps · carga máx. '+m.maxLoad+' kg · '+m.rounds+' rodada'+(m.rounds>1?'s':'')+'</div>'+rows;
+}
+function updateMethodSummary(exId){
+  const el = document.getElementById('msum-'+exId);
+  if(!el) return;
+  const ex = findExercise(exId);
+  if(!isMethodEx(ex)) return;
+  el.innerHTML = methodSummaryHtml(ex, weekData.logs[exId]);
+}
+
 function setStats(s, ex){
   if(s && Array.isArray(s.parts)){
     let reps=0, vol=0, n=0;
@@ -1185,6 +1265,73 @@ function autoFillRPE(exId, idx){
   if(inp){ inp.value = s.rpe; inp.classList.add('auto'); }
 }
 
+const MAX_REFS = 8;
+const METRIC_LABEL = {e1rm:'e1RM', vol:'Volume', load:'Carga máx.'};
+const METRIC_SUB = {
+  e1rm:'e1RM estimado (kg) por semana, a partir da melhor série de trabalho — fórmula de Epley.',
+  vol:'Volume de trabalho (kg × reps, sem aquecimento) por semana.',
+  load:'Maior carga usada nas séries de trabalho da semana (kg).'
+};
+function effectiveRefs(){ return Array.isArray(progSettings.refs) ? progSettings.refs : MAIN_LIFTS.map(l=>l.id); }
+function refLabel(id){
+  const ex = findExercise(id);
+  if(ex) return ex.name;
+  const ml = MAIN_LIFTS.find(l=>l.id===id);
+  return ml ? ml.label : id;
+}
+function refMetricsFor(ex){ return isMethodEx(ex) ? ['vol','load'] : ['e1rm','vol','load']; }
+function metricFor(id){
+  const allowed = refMetricsFor(findExercise(id));
+  let m = progSettings.metrics && progSettings.metrics[id];
+  if(!allowed.includes(m)) m = allowed[0];
+  return m;
+}
+function weekMetric(w, exId, metric){
+  const log = w && w.logs && w.logs[exId];
+  if(!log || !Array.isArray(log.sets)) return null;
+  if(metric==='e1rm'){
+    const b = bestWorkSet(log.sets);
+    return b ? epley1RM(b.carga, b.reps) : null;
+  }
+  let vol = 0, maxLoad = 0, any = false;
+  log.sets.forEach(st=>{
+    if(st.tipo==='aquecimento') return;
+    (Array.isArray(st.parts) ? st.parts : [st]).forEach(pt=>{
+      if(!pt) return;
+      const r = parseFloat(pt.reps)||0, c = parseFloat(pt.carga)||0;
+      if(!r) return;
+      any = true; vol += c*r; if(c>maxLoad) maxLoad = c;
+    });
+  });
+  if(!any) return null;
+  return metric==='vol' ? Math.round(vol) : maxLoad;
+}
+function renderRefPickerBar(){
+  return `<div class="ref-bar"><span>Exercícios de referência da progressão (${effectiveRefs().length})</span><button type="button" class="export-btn" id="ref-picker-btn">${showRefPicker ? 'Fechar' : 'Escolher'}</button></div>`;
+}
+function renderRefPicker(){
+  const wk = weekInfo(currentWeek);
+  const sel = new Set(effectiveRefs());
+  const shown = new Set();
+  let html = '<div class="program-panel ref-picker"><div class="adv-hint">Marque até '+MAX_REFS+' exercícios para acompanhar. Métodos avançados mostram volume e carga trabalhados.</div>';
+  DAY_TEMPLATES.forEach(d=>{
+    const list = getDayExercises(d, wk).filter(e=>!e.isTime && e.block!=='Ativação');
+    if(!list.length) return;
+    html += `<div class="block-label">${d.label} — ${esc(dayFocus(d))}</div>`;
+    list.forEach(e=>{
+      shown.add(e.id);
+      html += `<label class="check-row"><input type="checkbox" data-refcheck="${e.id}" ${sel.has(e.id)?'checked':''}> <span>${esc(e.name)}${isMethodEx(e) ? ' <span class="method-badge">'+METHODS[e.method].label+'</span>' : ''}</span></label>`;
+    });
+  });
+  const others = [...sel].filter(id=>!shown.has(id));
+  if(others.length){
+    html += '<div class="block-label">Selecionados fora dos treinos atuais</div>';
+    others.forEach(id=>{ html += `<label class="check-row"><input type="checkbox" data-refcheck="${id}" checked> <span>${esc(refLabel(id))}</span></label>`; });
+  }
+  html += '<button type="button" class="restore-btn" id="ref-reset-btn">Voltar ao padrão (supino, agachamento e terra)</button></div>';
+  return html;
+}
+
 function resolvedMainLiftLabel(lift){
   const day = DAY_TEMPLATES.find(d=>d.key===lift.dayKey);
   const wk = weekInfo(currentWeek);
@@ -1195,7 +1342,7 @@ function resolvedMainLiftLabel(lift){
 
 function computeSessionTotals(day, wk){
   const exercises = getDayExercises(day, wk);
-  let workSets=0, workReps=0, workVolume=0, warmSets=0, warmReps=0, warmVolume=0;
+  let workSets=0, workReps=0, workVolume=0, warmSets=0, warmReps=0, warmVolume=0, mReps=0, mVol=0;
   exercises.forEach(ex=>{
     if(ex.isTime) return;
     const log = weekData.logs[ex.id];
@@ -1204,10 +1351,10 @@ function computeSessionTotals(day, wk){
       const x = setStats(st, ex);
       if(!x.sets) return;
       if(st.tipo==='aquecimento'){ warmSets+=x.sets; warmReps+=x.reps; warmVolume+=x.vol; }
-      else { workSets+=x.sets; workReps+=x.reps; workVolume+=x.vol; }
+      else { workSets+=x.sets; workReps+=x.reps; workVolume+=x.vol; if(isMethodEx(ex)){ mReps+=x.reps; mVol+=x.vol; } }
     });
   });
-  return {workSets, workReps, workVolume:Math.round(workVolume), warmSets, warmReps, warmVolume:Math.round(warmVolume)};
+  return {workSets, workReps, workVolume:Math.round(workVolume), warmSets, warmReps, warmVolume:Math.round(warmVolume), methodReps:mReps, methodVolume:Math.round(mVol)};
 }
 
 /* ============================= RENDER ============================= */
@@ -1481,9 +1628,10 @@ function renderVolumeDropdown(day, wk){
   let totalSets = 0;
   const rows = exercises.map(ex=>{
     const t = targetFor(ex, wk);
-    totalSets += t.sets;
+    const mult = (isMethodEx(ex) && (ex.method==='superset' || ex.method==='triset')) ? ex.parts.length : 1;
+    totalSets += t.sets*mult;
     const badge = isMethodEx(ex) ? `<span class="method-badge">${METHODS[ex.method].label}</span>` : '';
-    return `<div class="vol-list-row"><span>${esc(ex.name)}${badge}</span><span class="num">${t.sets}× ${esc(t.reps)}</span></div>`;
+    return `<div class="vol-list-row"><span>${esc(ex.name)}${badge}</span><span class="num">${t.sets}× ${esc(t.reps)}${mult>1 ? ' ×'+mult+' exerc.' : ''}</span></div>`;
   }).join('');
   return `<details class="vol-dropdown">
     <summary>Volume planejado da sessão — ${totalSets} séries no total</summary>
@@ -1492,6 +1640,16 @@ function renderVolumeDropdown(day, wk){
 }
 
 function deltaBadgeHtml(ex, wk, curE1){
+  if(isMethodEx(ex)){
+    const cur = methodStats(ex, weekData.logs[ex.id]).vol;
+    if(!cur) return '';
+    const pl = prevLogFor(ex.id);
+    const prev = pl ? methodStats(ex, pl).vol : 0;
+    if(!prev) return '';
+    const d = cur - prev;
+    if(d===0) return `<span class="delta-badge neutral">= volume (sem. ${wk.n-1})</span>`;
+    return `<span class="delta-badge ${d>0?'up':'down'}">${d>0?'+':''}${d}kg vol. vs sem. ${wk.n-1}</span>`;
+  }
   if(ex.isTime || !curE1) return '';
   const prevLog = prevLogFor(ex.id);
   const prevBest = prevLog ? bestWorkSet(prevLog.sets) : null;
@@ -1579,6 +1737,7 @@ function renderExerciseTable(day, wk){
           ${setsHtml}
           <button type="button" class="add-set-btn" data-addset="${ex.id}">+ Adicionar série</button>
           ${log.sets.length>0 ? `<button type="button" class="add-set-btn" data-dupset="${ex.id}">⧉ Duplicar última</button>` : ''}
+          ${isM ? `<div class="method-summary" id="msum-${ex.id}">${methodSummaryHtml(ex, log)}</div>` : ''}
           <div class="rest-btn-row">
             <button type="button" data-resttimer="60">⏱ 60s</button>
             <button type="button" data-resttimer="90">⏱ 90s</button>
@@ -1595,7 +1754,7 @@ function renderExerciseTable(day, wk){
 function renderExerciseEdit(day){
   const exercises = getDayExercisesForScope(day, editScope);
   const meta = dayCustom(day).dayMeta || {};
-  const rows = exercises.map(ex=>{
+  const rows = exercises.map((ex, xi)=>{
     const m = (ex.method && ex.method!=='normal') ? ex.method : 'normal';
     return `<div class="ex-edit-block">
       <div class="ex-edit-row">
@@ -1604,6 +1763,11 @@ function renderExerciseEdit(day){
         <input type="text" class="small" data-editfield="baseReps" data-editex="${ex.id}" value="${esc(ex.baseReps)}" placeholder="reps">
         <button class="rm-btn" data-removeex="${ex.id}" title="Remover">×</button>
       </div>
+      <div class="ex-edit-sub">
+      <div class="move-btns">
+        <button type="button" class="move-btn" data-moveex="${ex.id}:-1" ${xi===0?'disabled':''} title="Subir">▲</button>
+        <button type="button" class="move-btn" data-moveex="${ex.id}:1" ${xi===exercises.length-1?'disabled':''} title="Descer">▼</button>
+      </div>
       <details class="adv-details" ${m!=='normal'?'open':''}>
         <summary>Método avançado: ${METHODS[m].label}</summary>
         <div class="adv-body">
@@ -1611,6 +1775,7 @@ function renderExerciseEdit(day){
           ${m!=='normal' ? `<input type="text" data-editparts="${ex.id}" value="${esc((ex.parts||[]).join(' + '))}" placeholder="Exercício A + Exercício B">` : ''}
         </div>
       </details>
+      </div>
     </div>`;
   }).join('');
   const hasCustom = customTemplates[day.key] && customTemplates[day.key][editScope];
@@ -1682,7 +1847,7 @@ function renderTotals(day, wk){
       <div><div class="tval num">${totalReps}</div><div class="tlabel">repetições</div></div>
       <div><div class="tval num">${totalSets}</div><div class="tlabel">séries</div></div>
     </div>
-    <div class="totals-split">Trabalho: ${t.workSets} séries · ${t.workReps} reps · ${t.workVolume}kg &nbsp;|&nbsp; Aquecimento: ${t.warmSets} séries · ${t.warmReps} reps · ${t.warmVolume}kg</div>
+    <div class="totals-split">Trabalho: ${t.workSets} séries · ${t.workReps} reps · ${t.workVolume}kg &nbsp;|&nbsp; Aquecimento: ${t.warmSets} séries · ${t.warmReps} reps · ${t.warmVolume}kg${t.methodVolume ? '<br>Métodos avançados (trabalho): '+t.methodVolume+'kg · '+t.methodReps+' reps' : ''}</div>
   </div>`;
 }
 
@@ -1801,20 +1966,23 @@ async function buildDashboardCharts(){
     <div class="ring-card"><div class="rnum num">${currentWeek}/12</div><div class="rlabel">semana atual</div></div>
   </div>`;
 
-  MAIN_LIFTS.forEach(lift=>{
-    const label = resolvedMainLiftLabel(lift);
-    const points = all.map(w=>{
-      const log = w && w.logs && w.logs[lift.id];
-      const best = log ? bestWorkSet(log.sets) : null;
-      return {y: best ? epley1RM(best.carga, best.reps) : null};
-    });
-    const svg = lineChartSVG(points, {color:'#E8590C'});
+  html += renderRefPickerBar();
+  if(showRefPicker) html += renderRefPicker();
+  const refs = effectiveRefs();
+  refs.forEach(id=>{
+    const metric = metricFor(id);
+    const ex = findExercise(id);
+    const allowed = refMetricsFor(ex);
+    const points = all.map(w=>({y: weekMetric(w, id, metric)}));
+    const svg = lineChartSVG(points, {color: metric==='e1rm' ? '#E8590C' : (metric==='vol' ? '#2E7D52' : '#3E5C78')});
+    const btns = allowed.map(m=>`<button type="button" class="metric-btn ${m===metric?'on':''}" data-refmetric="${id}:${m}">${METRIC_LABEL[m]}</button>`).join('');
     html += `<div class="chart-block">
-      <h3>${label}</h3>
-      <div class="chart-sub">e1RM estimado (kg) por semana, a partir da melhor série de trabalho — fórmula de Epley.</div>
-      ${svg || '<div class="chart-empty">Sem registros ainda — logue uma série de trabalho para ver a curva.</div>'}
+      <div class="chart-head"><h3>${esc(refLabel(id))}${isMethodEx(ex) ? '<span class="method-badge">'+METHODS[ex.method].label+'</span>' : ''}</h3><div class="metric-btns">${btns}</div></div>
+      <div class="chart-sub">${METRIC_SUB[metric]}</div>
+      ${svg || '<div class="chart-empty">Sem registros ainda — registre séries de trabalho neste exercício para ver a curva.</div>'}
     </div>`;
   });
+  if(refs.length===0) html += '<div class="chart-empty">Nenhum exercício de referência escolhido.</div>';
 
   const tonnagePoints = all.map(w => ({y: computeWeekTonnage(w)}));
   const tonnageSvg = lineChartSVG(tonnagePoints, {color:'#2E7D52'});
@@ -1840,6 +2008,32 @@ async function buildDashboardCharts(){
 
   el.innerHTML = html;
   document.getElementById('export-btn')?.addEventListener('click', exportData);
+  document.getElementById('ref-picker-btn')?.addEventListener('click', ()=>{ showRefPicker = !showRefPicker; buildDashboardCharts(); });
+  document.querySelectorAll('[data-refcheck]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const cur = effectiveRefs().slice();
+      const id = cb.dataset.refcheck;
+      if(cb.checked){
+        if(cur.length >= MAX_REFS){ cb.checked = false; alert('Máximo de '+MAX_REFS+' exercícios de referência.'); return; }
+        if(!cur.includes(id)) cur.push(id);
+      } else {
+        const i = cur.indexOf(id); if(i>=0) cur.splice(i,1);
+      }
+      progSettings.refs = cur;
+      saveSettings();
+      buildDashboardCharts();
+    });
+  });
+  document.getElementById('ref-reset-btn')?.addEventListener('click', ()=>{ progSettings.refs = null; saveSettings(); buildDashboardCharts(); });
+  document.querySelectorAll('[data-refmetric]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const pr = b.dataset.refmetric.split(':');
+      if(!progSettings.metrics) progSettings.metrics = {};
+      progSettings.metrics[pr[0]] = pr[1];
+      saveSettings();
+      buildDashboardCharts();
+    });
+  });
   document.getElementById('import-btn')?.addEventListener('click', ()=>{
     document.getElementById('import-file-input')?.click();
   });
@@ -1860,6 +2054,7 @@ async function handleImportFile(e){
     }
     if(payload.templates_personalizados){
       customTemplates = payload.templates_personalizados;
+      if(payload.configuracoes){ progSettings = Object.assign(defaultSettings(), payload.configuracoes); saveSettings(); }
       await kvSet(pk('templates'), JSON.stringify(customTemplates));
     }
     weeksCache = null;
@@ -1879,6 +2074,7 @@ async function exportData(){
     exportado_em: new Date().toISOString(),
     semana_atual: currentWeek,
     templates_personalizados: customTemplates,
+    configuracoes: progSettings,
     semanas: all.map((dados, i) => ({ semana: i+1, dados }))
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
@@ -2076,6 +2272,7 @@ function updateSummaryChip(exId){
   const el = document.getElementById('chip-'+exId);
   if(!el) return;
   el.textContent = summaryChipFor(weekData.logs[exId]);
+  updateMethodSummary(exId);
 }
 function updateTotalsDisplay(){
   const day = DAY_TEMPLATES[activeDayIdx];
@@ -2268,6 +2465,12 @@ function attachEvents(wk){
     const hint = document.getElementById('new-ex-hint');
     if(pin) pin.style.display = (m==='normal') ? 'none' : 'block';
     if(hint) hint.textContent = (m==='normal') ? '' : (METHODS[m].label + ': ' + METHODS[m].hint + '. Separe os exercícios com "+".');
+  });
+  document.querySelectorAll('[data-moveex]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const parts = btn.dataset.moveex.split(':');
+      moveExercise(DAY_TEMPLATES[activeDayIdx], parts[0], parseInt(parts[1]), editScope);
+    });
   });
   document.getElementById('clear-day-btn')?.addEventListener('click', ()=>{
     clearDayExercises(DAY_TEMPLATES[activeDayIdx], editScope);
