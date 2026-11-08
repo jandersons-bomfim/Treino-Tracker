@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Protocolo 12 Semanas — Sprint Tracker</title>
+<title>Treino Tracker — Sprint Tracker</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1C2321">
 <meta name="mobile-web-app-capable" content="yes">
@@ -333,6 +333,26 @@
   .metric-btn{font-size:11px;font-weight:600;padding:7px 10px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink-muted);cursor:pointer;}
   .metric-btn.on{background:var(--orange-soft);color:var(--orange);border-color:var(--orange);}
   .ref-picker .check-row{margin:8px 0;}
+  .bstart{margin-left:5px;}
+  .track-label span{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:4px;}
+  .track-summary{font-size:11.5px;color:var(--ink-faint);margin-top:6px;}
+  .program-block{border-top:1px solid var(--line);}
+  .program-block:first-of-type{border-top:none;}
+  .program-block .program-row{border-top:none;}
+  .prog-info{min-width:0;flex:1;}
+  .prog-name{font-size:13.5px;}
+  .prog-sub{font-size:11px;color:var(--ink-faint);font-weight:400;margin-top:2px;}
+  .prog-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+  .program-row button.danger{color:var(--red);border-color:var(--red);}
+  .program-row button:disabled{opacity:.35;cursor:default;}
+  .program-editor{background:var(--paper);border-radius:var(--radius);padding:12px;margin:0 0 10px;}
+  .program-editor label.lbl{font-size:11px;color:var(--ink-faint);display:block;margin:8px 0 4px;}
+  .program-editor input[type=text],.program-editor input[type=date],.program-editor input[type=number],.program-editor select{width:100%;padding:8px;border:1px solid var(--line);border-radius:2px;font-size:13px;font-family:'Inter';background:var(--paper-raised);color:var(--ink);}
+  .pe-block{display:flex;align-items:center;gap:8px;margin:8px 0;}
+  .pe-block select{flex:1;min-width:0;}
+  .pe-block input[type=number]{width:70px;flex:0 0 70px;}
+  .pe-block span{font-size:12px;color:var(--ink-muted);}
+  .program-new-form select{flex:1 1 100%;padding:8px;border:1px solid var(--line);border-radius:2px;font-size:12.5px;font-family:'Inter';background:var(--paper-raised);color:var(--ink);}
 </style>
 </head>
 <body>
@@ -347,10 +367,60 @@ const MESO = {
   forca:     {label:'INTENSIDADE', weeks:[9,10,11,12], note:'75–85% 1RM · RPE 8–9 · menos reps, mais carga'}
 };
 
+const PHASE_ORDER = ['adaptacao','volume','forca'];
+const DEFAULT_STRUCTURE = {blocks:[{phase:'adaptacao',weeks:4},{phase:'volume',weeks:4},{phase:'forca',weeks:4}], deloadEvery:4};
+const STRUCT_PRESETS = {
+  padrao:  {label:'Padrão: Introdução 4 → Volume 4 → Intensidade 4 (12 semanas)', blocks:[{phase:'adaptacao',weeks:4},{phase:'volume',weeks:4},{phase:'forca',weeks:4}], deloadEvery:4},
+  intro12: {label:'Introdução × 12 semanas', blocks:[{phase:'adaptacao',weeks:12}], deloadEvery:4},
+  vol4:    {label:'Volume × 4 semanas', blocks:[{phase:'volume',weeks:4}], deloadEvery:4},
+  int4:    {label:'Intensidade × 4 semanas', blocks:[{phase:'forca',weeks:4}], deloadEvery:4}
+};
+function cloneStructure(st){ return JSON.parse(JSON.stringify(st)); }
+function normalizeStructure(st){
+  let blocks = [];
+  if(st && Array.isArray(st.blocks)){
+    let total = 0;
+    st.blocks.forEach(b=>{
+      if(!b || !MESO[b.phase]) return;
+      let w = parseInt(b.weeks); if(!(w>=1)) w = 1; if(w>52) w = 52;
+      if(total + w > 52) w = 52 - total;
+      if(w < 1) return;
+      total += w;
+      blocks.push({phase:b.phase, weeks:w});
+    });
+  }
+  if(!blocks.length) return cloneStructure(DEFAULT_STRUCTURE);
+  let d = parseInt(st && st.deloadEvery); if(isNaN(d) || d<0) d = 4; if(d>12) d = 12;
+  return {blocks, deloadEvery:d};
+}
+function cycleStructure(){
+  const m = (typeof currentProgramMeta==='function') ? currentProgramMeta() : null;
+  return (m && m.structure) ? m.structure : DEFAULT_STRUCTURE;
+}
+function totalWeeks(){ return cycleStructure().blocks.reduce((a,b)=>a+b.weeks, 0); }
+function structureSummary(st){
+  const parts = st.blocks.map(b=>MESO[b.phase].label+' × '+b.weeks+' sem.').join(' → ');
+  return parts + (st.deloadEvery>0 ? ' · deload a cada '+st.deloadEvery+'ª sem.' : ' · sem deload');
+}
+function phaseRangesText(phase){
+  const st = cycleStructure();
+  let acc = 0; const out = [];
+  st.blocks.forEach(b=>{
+    if(b.phase===phase) out.push(b.weeks>1 ? (acc+1)+'-'+(acc+b.weeks) : String(acc+1));
+    acc += b.weeks;
+  });
+  return out.length ? out.join(', ') : null;
+}
 function weekInfo(n){
-  let mesoKey = n<=4 ? 'adaptacao' : n<=8 ? 'volume' : 'forca';
-  let isDeload = (n%4===0);
-  return {n, mesoKey, meso:MESO[mesoKey], isDeload, phaseKey: isDeload?'deload':mesoKey};
+  const st = cycleStructure();
+  let acc = 0, mesoKey = st.blocks[st.blocks.length-1].phase, within = 1, blockIdx = st.blocks.length-1;
+  for(let i=0;i<st.blocks.length;i++){
+    const b = st.blocks[i];
+    if(n <= acc + b.weeks){ mesoKey = b.phase; within = n - acc; blockIdx = i; break; }
+    acc += b.weeks;
+  }
+  const isDeload = st.deloadEvery>0 && (within % st.deloadEvery === 0);
+  return {n, mesoKey, meso:MESO[mesoKey], isDeload, phaseKey: isDeload?'deload':mesoKey, blockIdx, within};
 }
 
 const DAY_TEMPLATES = [
@@ -417,6 +487,11 @@ const DAY_TEMPLATES = [
 ];
 
 const LONGAO_KM = [3,4,5,3, 6,7,8,3, 5,5.5,6,3];
+function longaoDefault(n){ return n<=LONGAO_KM.length ? LONGAO_KM[n-1] : 6; }
+function defaultLongaoArray(){ return Array.from({length: totalWeeks()}, (_,i)=>longaoDefault(i+1)); }
+function fullLongao(arr){
+  return Array.from({length: totalWeeks()}, (_,i)=> (Array.isArray(arr) && arr[i]!=null && arr[i]!=='') ? arr[i] : longaoDefault(i+1));
+}
 
 function esc(v){
   return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -490,6 +565,7 @@ let expandedEx = {};
 let saveTimer = null;
 let theme = 'light';
 let showProgramPanel = false;
+let editingProgramId = null;
 let showAuthPanel = false;
 let progSettings = {refs:null, metrics:{}};
 let showRefPicker = false;
@@ -566,6 +642,19 @@ async function kvKeys(prefix){
       req.onerror = ()=>reject(req.error);
     });
   }catch(e){ return []; }
+}
+
+async function idbDeleteRaw(key){
+  if(memoryFallback){ memoryFallback.delete(key); return true; }
+  try{
+    const db = await openDB();
+    return await new Promise((resolve, reject)=>{
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(key);
+      tx.oncomplete = ()=>resolve(true);
+      tx.onerror = ()=>reject(tx.error);
+    });
+  }catch(e){ return false; }
 }
 
 /* ============================= CLOUD SYNC (Supabase) ============================= */
@@ -699,6 +788,19 @@ async function kvGet(key){
   }
   return await idbGetRaw(key);
 }
+async function kvDeletePrefix(prefix){
+  const targets = [localKey(prefix)];
+  if(!authUser || !legacyOwner() || legacyOwner()===authUser.id) targets.push(prefix); // un-prefixed (pre-login) copies too
+  for(const t of targets){
+    const keys = await kvKeys(t);
+    for(const k of keys) await idbDeleteRaw(k);
+  }
+  [...dirtyKeys].forEach(k=>{ if(k.startsWith(prefix)) dirtyKeys.delete(k); });
+  persistDirty();
+  if(authUser && sb){
+    try{ await sb.from('app_data').delete().like('key', prefix + '%'); }catch(e){}
+  }
+}
 async function kvSet(key, value){
   const localOk = await idbSetRaw(localKey(key), value);
   if(authUser) cloudSetTracked(key, value); // fire-and-forget; local write already covers offline/instant UI
@@ -708,12 +810,12 @@ async function kvSet(key, value){
 /* ============================= PROGRAMS (multi-cycle support) ============================= */
 
 let currentProgram = 'default';
-let programs = [{id:'default', name:'Ciclo 1', startDate:null, createdAt:Date.now()}];
+let programs = [{id:'default', name:'Ciclo 1', startDate:null, createdAt:Date.now(), structure:cloneStructure(DEFAULT_STRUCTURE)}];
 
 function pk(key){ return 'prog:'+currentProgram+':'+key; }
 
 async function loadPrograms(){
-  programs = [{id:'default', name:'Ciclo 1', startDate:null, createdAt:Date.now()}];
+  programs = [{id:'default', name:'Ciclo 1', startDate:null, createdAt:Date.now(), structure:cloneStructure(DEFAULT_STRUCTURE)}];
   currentProgram = 'default';
   const raw = await kvGet('__programs__');
   if(raw){
@@ -725,6 +827,7 @@ async function loadPrograms(){
   const raw2 = await kvGet('__currentProgram__');
   if(raw2) currentProgram = raw2;
   if(!programs.some(p=>p.id===currentProgram)) currentProgram = programs[0].id;
+  programs.forEach(p=>{ p.structure = normalizeStructure(p.structure); });
 }
 async function saveProgramsList(){
   await kvSet('__programs__', JSON.stringify(programs));
@@ -733,11 +836,12 @@ async function saveProgramsList(){
 function currentProgramMeta(){
   return programs.find(p=>p.id===currentProgram) || programs[0];
 }
-async function createProgram(name, startDate){
+async function createProgram(name, startDate, structure){
   const id = 'prog_' + Date.now();
-  programs.push({id, name: name || ('Ciclo ' + (programs.length+1)), startDate: startDate||null, createdAt: Date.now()});
+  programs.push({id, name: name || ('Ciclo ' + (programs.length+1)), startDate: startDate||null, createdAt: Date.now(), structure: normalizeStructure(structure || DEFAULT_STRUCTURE)});
   currentProgram = id;
   await saveProgramsList();
+  weeksCache = null;
   currentWeek = 1;
   activeDayIdx = 0;
   customTemplates = {};
@@ -746,13 +850,59 @@ async function createProgram(name, startDate){
   await loadPrevWeek(currentWeek);
   render();
 }
+
+async function mutateProgram(id, fn){
+  const pg = programs.find(x=>x.id===id);
+  if(!pg) return;
+  const st = normalizeStructure(pg.structure);
+  fn(pg, st);
+  pg.structure = normalizeStructure(st);
+  weeksCache = null;
+  await saveProgramsList();
+  if(id===currentProgram){
+    const tw = totalWeeks();
+    if(currentWeek > tw){
+      currentWeek = tw;
+      await loadWeek(currentWeek);
+      await loadPrevWeek(currentWeek);
+      await saveMeta();
+    }
+  }
+  render();
+}
+
+async function deleteProgram(id){
+  if(programs.length<=1){ alert('É preciso manter pelo menos um ciclo.'); return; }
+  const pg = programs.find(x=>x.id===id);
+  if(!pg) return;
+  if(!confirm('Excluir o ciclo "'+pg.name+'"? Todos os registros, treinos editados e configurações deste ciclo serão apagados e não poderão ser recuperados.')) return;
+  clearTimeout(saveTimer);
+  await saveQueue;
+  await kvDeletePrefix('prog:'+id+':');
+  programs = programs.filter(x=>x.id!==id);
+  editingProgramId = null;
+  const wasCurrent = (id===currentProgram);
+  if(wasCurrent) currentProgram = programs[0].id;
+  await saveProgramsList();
+  weeksCache = null;
+  if(wasCurrent){
+    currentWeek = Math.min(currentProgramMeta().lastWeek || 1, totalWeeks());
+    activeDayIdx = 0;
+    await loadTemplates();
+    await loadWeek(currentWeek);
+    await loadPrevWeek(currentWeek);
+  }
+  render();
+}
+
 async function switchProgram(id){
   if(id===currentProgram) return;
   await saveWeek();
   currentProgram = id;
   await saveProgramsList();
   const meta = currentProgramMeta();
-  currentWeek = meta.lastWeek || 1;
+  weeksCache = null;
+  currentWeek = Math.min(meta.lastWeek || 1, totalWeeks());
   activeDayIdx = 0;
   await loadTemplates();
   await loadWeek(currentWeek);
@@ -936,14 +1086,14 @@ function effectiveCardio(day){
       label: cfg.label || (CARDIO_TYPES[type]||CARDIO_TYPES.custom).label,
       type, isLongao: type==='longao',
       target: Object.assign({}, empty, cfg.target||{}),
-      longaoKm: Array.isArray(cfg.longaoKm) ? cfg.longaoKm : LONGAO_KM.slice()
+      longaoKm: fullLongao(cfg.longaoKm)
     };
   }
   if(!base) return null;
   return {
     id: base.id, label: base.label, type: BASE_CARDIO_TYPE[base.id] || 'custom', isLongao: !!base.isLongao,
     target: Object.assign({}, empty, base.target||{}, c.cardioOverride||{}),
-    longaoKm: Array.isArray(c.longaoKmOverride) ? c.longaoKmOverride : LONGAO_KM.slice()
+    longaoKm: fullLongao(c.longaoKmOverride)
   };
 }
 function ensureCardioCfg(day){
@@ -954,7 +1104,7 @@ function ensureCardioCfg(day){
     if(cur){
       c.cardioConfig = {enabled:true, id:cur.id, type:cur.type, label:cur.label, target:Object.assign({}, cur.target), longaoKm:cur.longaoKm.slice()};
     } else {
-      c.cardioConfig = {enabled:false, id:day.key+'_cardio', type:'leve', label:CARDIO_TYPES.leve.label, target:Object.assign({}, CARDIO_TYPES.leve.defaults), longaoKm:LONGAO_KM.slice()};
+      c.cardioConfig = {enabled:false, id:day.key+'_cardio', type:'leve', label:CARDIO_TYPES.leve.label, target:Object.assign({}, CARDIO_TYPES.leve.defaults), longaoKm:defaultLongaoArray()};
     }
   }
   if(!c.cardioConfig.target) c.cardioConfig.target = {};
@@ -963,7 +1113,7 @@ function ensureCardioCfg(day){
 function longaoKmFor(n){
   for(const d of DAY_TEMPLATES){
     const cd = effectiveCardio(d);
-    if(cd && cd.isLongao){ const v = cd.longaoKm[n-1]; return (v!=null && v!=='') ? v : LONGAO_KM[n-1]; }
+    if(cd && cd.isLongao){ const v = cd.longaoKm[n-1]; return (v!=null && v!=='') ? v : longaoDefault(n); }
   }
   return null;
 }
@@ -1148,8 +1298,8 @@ function targetFor(ex, wk){
 
 function cardioTarget(cardio, wk){
   if(cardio.isLongao){
-    const arr = cardio.longaoKm || LONGAO_KM;
-    const val = (arr[wk.n-1]!=null && arr[wk.n-1]!=='') ? arr[wk.n-1] : LONGAO_KM[wk.n-1];
+    const arr = cardio.longaoKm || [];
+    const val = (arr[wk.n-1]!=null && arr[wk.n-1]!=='') ? arr[wk.n-1] : longaoDefault(wk.n);
     return val + ' km — ritmo leve e constante';
   }
   return (cardio.target && cardio.target[wk.phaseKey]) || '—';
@@ -1511,18 +1661,52 @@ async function handleChangePassword(){
   }catch(e){ say(translateAuthError(e)); }
 }
 
-function renderProgramPanel(){
-  const rows = programs.map(p=>`
-    <div class="program-row ${p.id===currentProgram?'active':''}">
-      <span>${esc(p.name)}${p.id===currentProgram?' (atual)':''}</span>
-      ${p.id!==currentProgram ? `<button data-switchprog="${p.id}">Usar</button>` : ''}
+function renderProgramEditor(pg){
+  const st = normalizeStructure(pg.structure);
+  const total = st.blocks.reduce((a,b)=>a+b.weeks, 0);
+  const blocks = st.blocks.map((b,i)=>`<div class="pe-block">
+      <select data-pe-phase="${i}">${PHASE_ORDER.map(k=>`<option value="${k}" ${b.phase===k?'selected':''}>${MESO[k].label}</option>`).join('')}</select>
+      <input type="number" min="1" max="52" inputmode="numeric" value="${b.weeks}" data-pe-weeks="${i}">
+      <span>semanas</span>
+      <button type="button" class="rm-btn" data-pe-rm="${i}" ${st.blocks.length<=1?'disabled':''} title="Remover fase">×</button>
     </div>`).join('');
+  return `<div class="program-editor">
+    <label class="lbl">Nome do ciclo</label>
+    <input type="text" id="pe-name" value="${esc(pg.name)}">
+    <label class="lbl">Data de início (opcional)</label>
+    <input type="date" id="pe-date" value="${esc(pg.startDate||'')}">
+    <div class="block-label">Estrutura — ${total} semana${total>1?'s':''}</div>
+    <select id="pe-preset"><option value="">Aplicar um modelo…</option>${Object.keys(STRUCT_PRESETS).map(k=>`<option value="${k}">${STRUCT_PRESETS[k].label}</option>`).join('')}</select>
+    ${blocks}
+    <button type="button" class="restore-btn" id="pe-add-block">+ Adicionar fase</button>
+    <label class="lbl">Deload a cada quantas semanas dentro de cada fase (0 = sem deload)</label>
+    <input type="number" min="0" max="12" inputmode="numeric" id="pe-deload" value="${st.deloadEvery}">
+    <div class="adv-hint">Registros já feitos continuam salvos, mesmo se você encurtar o ciclo.</div>
+  </div>`;
+}
+
+function renderProgramPanel(){
+  const rows = programs.map(pg=>{
+    const isCur = pg.id===currentProgram;
+    return `<div class="program-block">
+      <div class="program-row ${isCur?'active':''}">
+        <div class="prog-info"><div class="prog-name">${esc(pg.name)}${isCur?' (atual)':''}</div><div class="prog-sub">${esc(structureSummary(normalizeStructure(pg.structure)))}</div></div>
+        <div class="prog-actions">
+          ${!isCur ? `<button data-switchprog="${pg.id}">Usar</button>` : ''}
+          <button data-progedit="${pg.id}">${editingProgramId===pg.id ? 'Fechar' : 'Editar'}</button>
+          <button class="danger" data-progdel="${pg.id}" ${programs.length<=1?'disabled title="É preciso manter pelo menos um ciclo"':''}>Excluir</button>
+        </div>
+      </div>
+      ${editingProgramId===pg.id ? renderProgramEditor(pg) : ''}
+    </div>`;
+  }).join('');
   return `<div class="program-panel">
     <div style="font-size:12px;color:var(--ink-faint);margin-bottom:8px;">Seus ciclos de treino</div>
     ${rows}
     <div class="program-new-form">
       <input type="text" id="new-prog-name" placeholder="Nome do novo ciclo (ex: Ciclo 2)">
       <input type="date" id="new-prog-date" title="Data de início (opcional)">
+      <select id="new-prog-preset">${Object.keys(STRUCT_PRESETS).map(k=>`<option value="${k}">${STRUCT_PRESETS[k].label}</option>`).join('')}</select>
       <button class="add-ex-btn" id="new-prog-btn">+ Criar ciclo</button>
     </div>
   </div>`;
@@ -1554,27 +1738,28 @@ function renderHero(wk){
   <div class="hero">
     <div class="hero-top">
       <div>
-        <div class="hero-week num">S<span>emana</span> ${wk.n}<span> / 12</span></div>
+        <div class="hero-week num">S<span>emana</span> ${wk.n}<span> / ${totalWeeks()}</span></div>
         <div class="hero-meso">${wk.meso.label} <span class="phase-pill ${phaseClass(wk)}">${phaseLabel(wk)}</span></div>
       </div>
       <div class="week-nav">
         <button id="prev-week" ${wk.n<=1?'disabled':''}>‹</button>
-        <button id="next-week" ${wk.n>=12?'disabled':''}>›</button>
+        <button id="next-week" ${wk.n>=totalWeeks()?'disabled':''}>›</button>
       </div>
     </div>
     <div class="track-toggle-row" id="track-toggle-row">
-      <span class="compact-label">${trackExpanded ? 'Ocultar linha do tempo' : 'Ver linha do tempo das 12 semanas'}</span>
+      <span class="compact-label">${trackExpanded ? 'Ocultar linha do tempo' : 'Ver linha do tempo do ciclo'}</span>
       <span class="toggle-chevron">${trackExpanded ? '▴' : '▾'}</span>
     </div>
     ${trackExpanded ? `
     <div class="track">
-      ${Array.from({length:12}).map((_,i)=>{
+      ${Array.from({length:totalWeeks()}).map((_,i)=>{
         const n=i+1; const w=weekInfo(n);
-        const cls = (w.isDeload?'deload':'build') + (n===wk.n?' current':'');
+        const cls = (w.isDeload?'deload':'build') + (n===wk.n?' current':'') + ((w.within===1 && n>1) ? ' bstart' : '');
         return `<a data-goto="${n}" class="${cls}" title="Semana ${n} — ${w.isDeload?'Deload':w.meso.label}"></a>`;
       }).join('')}
     </div>
-    <div class="track-label"><span>INTRODUÇÃO</span><span>VOLUME</span><span>INTENSIDADE</span></div>
+    <div class="track-label">${cycleStructure().blocks.map(b=>`<span style="flex:${b.weeks}">${MESO[b.phase].label}${b.weeks>=3 ? ' · '+b.weeks+' sem.' : ''}</span>`).join('')}</div>
+    <div class="track-summary">${esc(currentProgramMeta().name)}: ${esc(structureSummary(cycleStructure()))}</div>
     ` : ''}
   </div>`;
 }
@@ -1752,6 +1937,7 @@ function renderExerciseTable(day, wk){
 }
 
 function renderExerciseEdit(day){
+  if(editScope!=='all' && !phaseRangesText(editScope)) editScope = 'all';
   const exercises = getDayExercisesForScope(day, editScope);
   const meta = dayCustom(day).dayMeta || {};
   const rows = exercises.map((ex, xi)=>{
@@ -1788,10 +1974,8 @@ function renderExerciseEdit(day){
     <div class="scope-select-wrap">
       <label>Aplicar edições dos exercícios a:</label>
       <select id="edit-scope-select">
-        <option value="all" ${editScope==='all'?'selected':''}>Todas as 12 semanas</option>
-        <option value="adaptacao" ${editScope==='adaptacao'?'selected':''}>Só ${MESO.adaptacao.label} (sem. 1-4)</option>
-        <option value="volume" ${editScope==='volume'?'selected':''}>Só ${MESO.volume.label} (sem. 5-8)</option>
-        <option value="forca" ${editScope==='forca'?'selected':''}>Só ${MESO.forca.label} (sem. 9-12)</option>
+        <option value="all" ${editScope==='all'?'selected':''}>Todas as ${totalWeeks()} semanas do ciclo</option>
+        ${PHASE_ORDER.filter(k=>phaseRangesText(k)).map(k=>`<option value="${k}" ${editScope===k?'selected':''}>Só ${MESO[k].label} (sem. ${phaseRangesText(k)})</option>`).join('')}
       </select>
     </div>
     <div>${rows || '<div class="chart-empty">Nenhum exercício neste treino.</div>'}</div>
@@ -1827,7 +2011,7 @@ function renderCardioEdit(day){
         <input type="text" inputmode="decimal" class="small" data-longaoweek="${i}" value="${esc(km)}" style="max-width:90px;">
       </div>`).join('');
   } else {
-    html += `<div class="adv-hint">Meta do treino em cada fase (vale para as 12 semanas):</div>
+    html += `<div class="adv-hint">Meta do treino em cada fase (vale para todas as semanas do ciclo):</div>
     <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Introdução</span><input type="text" class="ex-edit-name" data-cardiophase="adaptacao" value="${esc(cd.target.adaptacao)}"></div>
     <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Volume</span><input type="text" class="ex-edit-name" data-cardiophase="volume" value="${esc(cd.target.volume)}"></div>
     <div class="ex-edit-row"><span style="width:110px;font-size:12px;">Intensidade</span><input type="text" class="ex-edit-name" data-cardiophase="forca" value="${esc(cd.target.forca)}"></div>
@@ -1899,7 +2083,7 @@ function renderRetro(){
 async function collectAllWeeks(force){
   if(force || !weeksCache || weeksCache.program!==currentProgram){
     const prog = currentProgram;
-    const data = await Promise.all(Array.from({length:12}, async (_,i)=>{
+    const data = await Promise.all(Array.from({length:totalWeeks()}, async (_,i)=>{
       try{
         const raw = await kvGet('prog:'+prog+':week:'+(i+1));
         return raw ? JSON.parse(raw) : null;
@@ -1919,8 +2103,9 @@ function lineChartSVG(points, opts){
   const ys = valid.map(p=>+p.y);
   let minY = Math.min(...ys), maxY = Math.max(...ys);
   if(minY===maxY){ minY -= 1; maxY += 1; }
-  const xStep = (W-pad*2)/11;
-  const toX = i => pad + i*xStep;
+  const N = points.length;
+  const xStep = N>1 ? (W-pad*2)/(N-1) : 0;
+  const toX = i => N>1 ? pad + i*xStep : W/2;
   const toY = y => H-pad - ((y-minY)/(maxY-minY))*(H-pad*2);
   let path = '';
   let dots = '';
@@ -1930,8 +2115,9 @@ function lineChartSVG(points, opts){
     path += (path===''?'M':'L') + x + ',' + y + ' ';
     dots += `<circle cx="${x}" cy="${y}" r="3" fill="${opts.color}"></circle>`;
   });
-  const gridLines = Array.from({length:12}).map((_,i)=>`<line x1="${toX(i)}" y1="${pad-10}" x2="${toX(i)}" y2="${H-pad}" stroke="var(--line)" stroke-width="1"></line>`).join('');
-  const labels = Array.from({length:12}).map((_,i)=>`<text x="${toX(i)}" y="${H-8}" font-size="9" fill="var(--ink-faint)" text-anchor="middle">${i+1}</text>`).join('');
+  const gridLines = Array.from({length:N}).map((_,i)=>`<line x1="${toX(i)}" y1="${pad-10}" x2="${toX(i)}" y2="${H-pad}" stroke="var(--line)" stroke-width="1"></line>`).join('');
+  const step = Math.max(1, Math.ceil(N/16));
+  const labels = Array.from({length:N}).map((_,i)=> (i%step===0 || i===N-1) ? `<text x="${toX(i)}" y="${H-8}" font-size="9" fill="var(--ink-faint)" text-anchor="middle">${i+1}</text>` : '').join('');
   return `<svg class="chart" viewBox="0 0 ${W} ${H}">${gridLines}<path d="${path.trim()}" fill="none" stroke="${opts.color}" stroke-width="2"></path>${dots}${labels}</svg>`;
 }
 
@@ -1963,7 +2149,7 @@ async function buildDashboardCharts(){
   html += `<div class="ring-row">
     <div class="ring-card"><div class="rnum num">${totalSetsLogged}</div><div class="rlabel">séries registradas no total</div></div>
     <div class="ring-card"><div class="rnum num">${weeksWithData}</div><div class="rlabel">semanas com registro</div></div>
-    <div class="ring-card"><div class="rnum num">${currentWeek}/12</div><div class="rlabel">semana atual</div></div>
+    <div class="ring-card"><div class="rnum num">${currentWeek}/${totalWeeks()}</div><div class="rlabel">semana atual</div></div>
   </div>`;
 
   html += renderRefPickerBar();
@@ -2055,6 +2241,7 @@ async function handleImportFile(e){
     if(payload.templates_personalizados){
       customTemplates = payload.templates_personalizados;
       if(payload.configuracoes){ progSettings = Object.assign(defaultSettings(), payload.configuracoes); saveSettings(); }
+      if(payload.estrutura_ciclo){ const pm = currentProgramMeta(); pm.structure = normalizeStructure(payload.estrutura_ciclo); weeksCache = null; await saveProgramsList(); }
       await kvSet(pk('templates'), JSON.stringify(customTemplates));
     }
     weeksCache = null;
@@ -2073,6 +2260,8 @@ async function exportData(){
   const payload = {
     exportado_em: new Date().toISOString(),
     semana_atual: currentWeek,
+    nome_ciclo: currentProgramMeta().name,
+    estrutura_ciclo: currentProgramMeta().structure,
     templates_personalizados: customTemplates,
     configuracoes: progSettings,
     semanas: all.map((dados, i) => ({ semana: i+1, dados }))
@@ -2081,7 +2270,7 @@ async function exportData(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'protocolo-12-semanas-registros.json';
+  a.download = 'treino-registros.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -2092,7 +2281,7 @@ async function exportData(){
 
 function renderPlano(wk){
   let rows = '';
-  for(let n=1;n<=12;n++){
+  for(let n=1;n<=totalWeeks();n++){
     const w = weekInfo(n);
     const kmv = longaoKmFor(n);
     const km = (kmv===null ? '—' : kmv);
@@ -2106,7 +2295,7 @@ function renderPlano(wk){
   }
   return `
     <div class="panel">
-      <h2 style="font-size:17px;margin-bottom:10px;">Visão geral — 12 semanas</h2>
+      <h2 style="font-size:17px;margin-bottom:10px;">Visão geral — ${totalWeeks()} semanas · ${esc(currentProgramMeta().name)}</h2>
       <table class="overview">
         <thead><tr><th>Sem.</th><th>Mesociclo</th><th>Fase</th><th>Parâmetro musculação</th><th>Longão</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -2219,7 +2408,7 @@ async function refreshPRBadges(day, wk){
 
 async function shareDaySummary(day, wk){
   const exercises = getDayExercises(day, wk);
-  let lines = [`${day.label} — ${dayFocus(day)} (Semana ${wk.n}/12)`];
+  let lines = [`${day.label} — ${dayFocus(day)} (Semana ${wk.n}/${totalWeeks()})`];
   exercises.forEach(ex=>{
     const log = weekData.logs[ex.id];
     if(!log || !Array.isArray(log.sets) || log.sets.length===0) return;
@@ -2533,7 +2722,7 @@ function attachEvents(wk){
     const oldLabel = (CARDIO_TYPES[old]||{}).label;
     cfg.type = nt;
     if(!cfg.label || cfg.label===oldLabel) cfg.label = CARDIO_TYPES[nt].label;
-    if(nt==='longao'){ if(!Array.isArray(cfg.longaoKm)) cfg.longaoKm = LONGAO_KM.slice(); }
+    if(nt==='longao'){ if(!Array.isArray(cfg.longaoKm)) cfg.longaoKm = defaultLongaoArray(); }
     else if(CARDIO_TYPES[nt].defaults){ cfg.target = Object.assign({}, CARDIO_TYPES[nt].defaults); }
     saveTemplates();
     render();
@@ -2553,7 +2742,7 @@ function attachEvents(wk){
   document.querySelectorAll('[data-longaoweek]').forEach(inp=>{
     inp.addEventListener('change', ()=>{
       const cfg = ensureCardioCfg(DAY_TEMPLATES[activeDayIdx]);
-      if(!Array.isArray(cfg.longaoKm)) cfg.longaoKm = LONGAO_KM.slice();
+      if(!Array.isArray(cfg.longaoKm)) cfg.longaoKm = defaultLongaoArray();
       cfg.longaoKm[parseInt(inp.dataset.longaoweek)] = inp.value;
       saveTemplates();
     });
@@ -2602,8 +2791,62 @@ function attachEvents(wk){
   document.getElementById('new-prog-btn')?.addEventListener('click', ()=>{
     const name = document.getElementById('new-prog-name').value;
     const date = document.getElementById('new-prog-date').value;
+    const presetKey = document.getElementById('new-prog-preset') ? document.getElementById('new-prog-preset').value : 'padrao';
     showProgramPanel = false;
-    createProgram(name, date || null);
+    createProgram(name, date || null, cloneStructure(STRUCT_PRESETS[presetKey] || STRUCT_PRESETS.padrao));
+  });
+  document.querySelectorAll('[data-progedit]').forEach(b=>{
+    b.addEventListener('click', ()=>{ editingProgramId = (editingProgramId===b.dataset.progedit) ? null : b.dataset.progedit; render(); });
+  });
+  document.querySelectorAll('[data-progdel]').forEach(b=>{
+    b.addEventListener('click', ()=>{ deleteProgram(b.dataset.progdel); });
+  });
+  document.getElementById('pe-name')?.addEventListener('change', (e)=>{
+    const id = editingProgramId;
+    const pg = programs.find(x=>x.id===id);
+    if(!pg) return;
+    pg.name = e.target.value.trim() || pg.name;
+    saveProgramsList();
+    const sw = document.getElementById('program-switcher-btn');
+    if(sw && id===currentProgram) sw.textContent = 'Programa: ' + pg.name + ' ▾';
+  });
+  document.getElementById('pe-date')?.addEventListener('change', (e)=>{
+    const pg = programs.find(x=>x.id===editingProgramId);
+    if(!pg) return;
+    pg.startDate = e.target.value || null;
+    saveProgramsList();
+  });
+  document.getElementById('pe-preset')?.addEventListener('change', (e)=>{
+    const k = e.target.value; if(!k || !STRUCT_PRESETS[k]) return;
+    mutateProgram(editingProgramId, (pg, st)=>{ const pr = cloneStructure(STRUCT_PRESETS[k]); st.blocks = pr.blocks; st.deloadEvery = pr.deloadEvery; });
+  });
+  document.querySelectorAll('[data-pe-phase]').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      const i = parseInt(sel.dataset.pePhase);
+      mutateProgram(editingProgramId, (pg, st)=>{ if(st.blocks[i]) st.blocks[i].phase = sel.value; });
+    });
+  });
+  document.querySelectorAll('[data-pe-weeks]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const i = parseInt(inp.dataset.peWeeks);
+      mutateProgram(editingProgramId, (pg, st)=>{ if(st.blocks[i]) st.blocks[i].weeks = Math.max(1, Math.min(52, parseInt(inp.value)||1)); });
+    });
+  });
+  document.querySelectorAll('[data-pe-rm]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const i = parseInt(b.dataset.peRm);
+      mutateProgram(editingProgramId, (pg, st)=>{ if(st.blocks.length>1) st.blocks.splice(i,1); });
+    });
+  });
+  document.getElementById('pe-add-block')?.addEventListener('click', ()=>{
+    mutateProgram(editingProgramId, (pg, st)=>{
+      const last = st.blocks[st.blocks.length-1];
+      const nx = PHASE_ORDER[(PHASE_ORDER.indexOf(last.phase)+1) % PHASE_ORDER.length];
+      st.blocks.push({phase:nx, weeks:4});
+    });
+  });
+  document.getElementById('pe-deload')?.addEventListener('change', (e)=>{
+    mutateProgram(editingProgramId, (pg, st)=>{ st.deloadEvery = Math.max(0, Math.min(12, parseInt(e.target.value)||0)); });
   });
   document.querySelectorAll('[data-goto-today]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
@@ -2641,11 +2884,11 @@ function attachEvents(wk){
 
 async function goWeek(n){
   if(n<1) return;
-  if(n>12){
-    const wantsNew = confirm('Você concluiu as 12 semanas! Quer iniciar um novo ciclo (mesociclos reiniciam do zero)?');
+  if(n>totalWeeks()){
+    const wantsNew = confirm('Você concluiu as '+totalWeeks()+' semanas deste ciclo! Quer iniciar um novo ciclo com a mesma estrutura?');
     if(wantsNew){
       const name = prompt('Nome do novo ciclo:', 'Ciclo ' + (programs.length+1)) || ('Ciclo ' + (programs.length+1));
-      await createProgram(name, null);
+      await createProgram(name, null, cloneStructure(currentProgramMeta().structure));
     }
     return;
   }
