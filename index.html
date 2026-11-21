@@ -352,7 +352,41 @@
   .pe-block select{flex:1;min-width:0;}
   .pe-block input[type=number]{width:70px;flex:0 0 70px;}
   .pe-block span{font-size:12px;color:var(--ink-muted);}
-  .program-new-form select{flex:1 1 100%;padding:8px;border:1px solid var(--line);border-radius:2px;font-size:12.5px;font-family:'Inter';background:var(--paper-raised);color:var(--ink);}
+  .program-new-form select{flex:1 1 100%;min-width:0;padding:8px;border:1px solid var(--line);border-radius:2px;font-size:12.5px;font-family:'Inter';background:var(--paper-raised);color:var(--ink);}
+  .sync-row{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:11px;color:var(--ink-faint);margin:-4px 0 10px;cursor:pointer;user-select:none;}
+  .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--ink-faint);flex-shrink:0;}
+  .sync-row.ok .sync-dot{background:var(--green);}
+  .sync-row.syncing .sync-dot{background:var(--blue);animation:syncpulse 1s infinite;}
+  .sync-row.pending .sync-dot,.sync-row.offline .sync-dot{background:var(--orange);}
+  .sync-row.error .sync-dot{background:var(--red);}
+  .sync-row.error{color:var(--red);}
+  @keyframes syncpulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .week-nav #today-btn{width:auto;padding:0 12px;font-size:12px;font-weight:600;}
+  .week-range{font-size:12px;color:var(--ink-faint);margin-left:8px;}
+  .week-summary{font-size:12px;color:var(--ink-muted);margin:-6px 0 14px;}
+  .day-chip.today{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange);}
+  .dstat{font-size:11px;margin-left:3px;font-weight:700;}
+  .day-chip.done .dstat{color:var(--green);}
+  .day-chip.missed .dstat{color:var(--orange);}
+  .suggest-box{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--ink-faint);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;font-size:12px;}
+  .suggest-box.up{border-left-color:var(--green);}
+  .suggest-box.down{border-left-color:var(--blue);}
+  .suggest-box.keep{border-left-color:var(--orange);}
+  .sug-title{font-size:13px;margin-bottom:4px;}
+  .sug-tag{font-size:10px;font-weight:700;margin-left:6px;color:var(--ink-muted);}
+  .sug-text{color:var(--ink-muted);margin-bottom:6px;}
+  .sug-ghost{color:var(--ink-faint);font-size:11px;margin-bottom:6px;}
+  .sug-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .sug-actions button,.prefill-day-btn{font-size:12px;font-weight:600;padding:8px 12px;border-radius:14px;border:1px solid var(--line);background:var(--paper-raised);color:var(--ink-muted);cursor:pointer;}
+  .prefill-day-btn{margin-bottom:12px;width:100%;text-align:center;}
+  .sug-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-top:2px;background:var(--line);color:var(--ink-muted);}
+  .sug-badge.up{background:var(--green-soft);color:var(--green);}
+  .sug-badge.down{background:var(--blue-soft);color:var(--blue);}
+  .sug-badge.keep{background:var(--orange-soft);color:var(--orange);}
+  .onboard{background:var(--paper-raised);border:1px solid var(--orange);border-radius:var(--radius);padding:16px;margin-bottom:16px;}
+  .onboard h3{font-size:16px;margin-bottom:4px;}
+  .onboard label.lbl{font-size:11px;color:var(--ink-faint);display:block;margin:10px 0 4px;}
+  .onboard select,.onboard input[type=date]{width:100%;padding:9px;border:1px solid var(--line);border-radius:2px;font-size:13px;font-family:'Inter';background:var(--paper);color:var(--ink);}
 </style>
 </head>
 <body>
@@ -422,6 +456,25 @@ function weekInfo(n){
   const isDeload = st.deloadEvery>0 && (within % st.deloadEvery === 0);
   return {n, mesoKey, meso:MESO[mesoKey], isDeload, phaseKey: isDeload?'deload':mesoKey, blockIdx, within};
 }
+
+function parseISODate(str){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str||''); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; }
+function mondayOf(d){ const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
+function cycleStartMonday(){ const m = currentProgramMeta(); const sd = parseISODate(m && m.startDate); return sd ? mondayOf(sd) : null; }
+function dateOfDay(weekN, dayIdx){ const m = cycleStartMonday(); return m ? new Date(m.getFullYear(), m.getMonth(), m.getDate() + (weekN-1)*7 + dayIdx) : null; }
+function startOfToday(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function sameDay(a, b){ return !!(a && b && a.getTime()===b.getTime()); }
+function fmtDM(d){ return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0'); }
+function todayPosition(){
+  const m = cycleStartMonday(); if(!m) return null;
+  const diff = Math.round((startOfToday() - m) / 86400000);
+  return {week: Math.floor(diff/7)+1, dayIdx: ((diff%7)+7)%7, diff};
+}
+function autoPositionToday(){
+  const tp = todayPosition();
+  if(tp && tp.week>=1 && tp.week<=totalWeeks()){ currentWeek = tp.week; activeDayIdx = tp.dayIdx; return true; }
+  return false;
+}
+function weekRangeText(n){ const a = dateOfDay(n,0), b = dateOfDay(n,6); return (a && b) ? fmtDM(a)+' – '+fmtDM(b) : ''; }
 
 const DAY_TEMPLATES = [
  {key:'seg', label:'Segunda', focus:'Peito + Tríceps + Corrida leve', strength:[
@@ -524,6 +577,67 @@ const CARDIO_TYPES = {
 };
 const BASE_CARDIO_TYPE = {seg_leve:'leve', qua_tiro:'tiros', sab_cross:'cross', dom_longao:'longao'};
 
+function X(id, name, sets, reps, main){ return {id, name, baseSets:sets, baseReps:reps, main:!!main}; }
+function planFromSpec(tag, spec){
+  const out = {};
+  DAY_TEMPLATES.forEach(d=>{
+    const sp = spec[d.key] || {rest:true};
+    const c = {};
+    c.all = { removed: d.strength.map(e=>e.id), added: (sp.exercises||[]).map(e=>Object.assign({}, e, {id: tag+'_'+d.key+'_'+e.id})) };
+    c.dayMeta = { focus: sp.focus || '', rest: !!sp.rest };
+    const cid = d.cardio ? d.cardio.id : d.key+'_cardio';
+    if(sp.cardio){
+      const type = sp.cardio.type;
+      c.cardioConfig = {
+        enabled:true, id:cid, type, label: sp.cardio.label || CARDIO_TYPES[type].label,
+        target: Object.assign({adaptacao:'',volume:'',forca:'',deload:''}, CARDIO_TYPES[type].defaults||{}, sp.cardio.target||{}),
+        longaoKm: sp.cardio.longaoKm
+      };
+    } else {
+      c.cardioConfig = { enabled:false, id:cid, type:'leve', label:CARDIO_TYPES.leve.label, target:Object.assign({}, CARDIO_TYPES.leve.defaults) };
+    }
+    out[d.key] = c;
+  });
+  return out;
+}
+const PLAN_TEMPLATES = {
+  padrao: {label:'Híbrido — musculação 5×/semana + corrida (plano original)', build:()=>({})},
+  branco: {label:'Em branco — monto do zero', build:()=>{
+    const spec = {}; DAY_TEMPLATES.forEach(d=>{ spec[d.key] = {focus:'Novo treino', exercises:[], cardio:null}; });
+    return planFromSpec('b', spec);
+  }},
+  abc: {label:'ABC — 3 dias (peito/ombro/tríceps · costas/bíceps · pernas)', build:()=>planFromSpec('abc', {
+    seg:{focus:'A — Peito, ombro e tríceps', exercises:[X('a1','Supino reto',4,'6-8',true),X('a2','Supino inclinado',3,'8-10'),X('a3','Desenvolvimento',3,'8-10'),X('a4','Elevação lateral',3,'12-15'),X('a5','Tríceps corda',3,'10-12'),X('a6','Tríceps testa',3,'10-12')]},
+    ter:{rest:true},
+    qua:{focus:'B — Costas e bíceps', exercises:[X('b1','Barra fixa',4,'até a falha',true),X('b2','Remada curvada',4,'6-8'),X('b3','Puxada aberta',3,'10'),X('b4','Remada baixa',3,'10-12'),X('b5','Rosca direta',3,'8-10'),X('b6','Rosca martelo',3,'10-12')]},
+    qui:{rest:true},
+    sex:{focus:'C — Pernas', exercises:[X('c1','Agachamento',4,'5-6',true),X('c2','Leg press',3,'8-10'),X('c3','Stiff',3,'8-10'),X('c4','Cadeira extensora',3,'12-15'),X('c5','Mesa flexora',3,'10-12'),X('c6','Panturrilha em pé',4,'12-15')]},
+    sab:{rest:true}, dom:{rest:true}
+  })},
+  fullbody: {label:'Full Body — 3 dias por semana', build:()=>planFromSpec('fb', {
+    seg:{focus:'Full Body A', exercises:[X('a1','Agachamento',3,'6-8',true),X('a2','Supino reto',3,'6-8',true),X('a3','Remada curvada',3,'8-10'),X('a4','Desenvolvimento',3,'8-10'),X('a5','Rosca direta',2,'10-12'),X('a6','Tríceps corda',2,'10-12')]},
+    ter:{rest:true},
+    qua:{focus:'Full Body B', exercises:[X('b1','Levantamento terra',3,'5-6',true),X('b2','Supino inclinado',3,'8-10'),X('b3','Barra fixa',3,'até a falha'),X('b4','Leg press',3,'10-12'),X('b5','Elevação lateral',3,'12-15'),X('b6','Abdominal infra',3,'15')]},
+    qui:{rest:true},
+    sex:{focus:'Full Body C', exercises:[X('c1','Agachamento búlgaro',3,'8-10/perna'),X('c2','Supino com halteres',3,'8-10'),X('c3','Puxada aberta',3,'10'),X('c4','Stiff',3,'8-10'),X('c5','Face pull',3,'12-15'),X('c6','Panturrilha em pé',3,'12-15')]},
+    sab:{rest:true}, dom:{rest:true}
+  })},
+  corrida5k: {label:'Corrida 5 km — 4 corridas + 1 força por semana', build:()=>planFromSpec('r5', {
+    seg:{rest:true},
+    ter:{focus:'Corrida leve', cardio:{type:'leve', label:'Corrida leve', target:{adaptacao:'20–25 min em ritmo confortável (pode alternar com caminhada)', volume:'30 min em ritmo confortável', forca:'30–35 min, últimos 5 min um pouco mais forte', deload:'20 min bem leve'}}},
+    qua:{focus:'Força para corrida', exercises:[X('f1','Agachamento',3,'8-10',true),X('f2','Afundo',3,'10/perna'),X('f3','Stiff',3,'8-10'),X('f4','Elevação pélvica',3,'10-12'),X('f5','Panturrilha em pé',4,'12-15'),X('f6','Dead Bug',3,'12')]},
+    qui:{focus:'Tiros', cardio:{type:'tiros', label:'Tiros / intervalado'}},
+    sex:{rest:true},
+    sab:{focus:'Corrida leve', cardio:{type:'leve', label:'Corrida leve'}},
+    dom:{focus:'Longão', cardio:{type:'longao', label:'Longão', longaoKm:[3,3.5,4,3, 4,4.5,5,3.5, 5,5.5,6,4]}}
+  })}
+};
+async function applyPlanTemplate(planKey){
+  const pt = PLAN_TEMPLATES[planKey] || PLAN_TEMPLATES.padrao;
+  customTemplates = pt.build();
+  await saveTemplates();
+}
+
 const MAIN_LIFTS = [
   {id:'supino_reto', label:'Supino reto', dayKey:'seg'},
   {id:'agachamento', label:'Agachamento', dayKey:'ter'},
@@ -569,6 +683,13 @@ let editingProgramId = null;
 let showAuthPanel = false;
 let progSettings = {refs:null, metrics:{}};
 let showRefPicker = false;
+let showOnboarding = false;
+let programsExisted = false;
+let baseWeekData = null;
+let baseWeekNum = 0;
+let inflightCloud = 0;
+let lastSyncAt = 0;
+let lastCloudError = '';
 let authMode = 'login';
 let recoveryMode = false;
 let showChangePass = false;
@@ -693,14 +814,26 @@ async function initAuth(){
   authInitDone = true;
 }
 
-async function reloadAllAndRender(){
+async function detectFirstRun(){
+  showOnboarding = false;
+  if(programsExisted) return;
+  const w1 = await kvGet('prog:default:week:1');
+  const tp = await kvGet('prog:default:templates');
+  if(w1===null && tp===null) showOnboarding = true;
+}
+
+async function reloadAllAndRender(keepPosition){
+  const keepW = currentWeek, keepD = activeDayIdx;
   weeksCache = null;
   histBest = {};
   editingDay = false;
   expandedEx = {};
   await loadDirty();
   await loadPrograms();
+  await detectFirstRun();
   await loadMeta();
+  if(keepPosition){ currentWeek = Math.min(keepW, totalWeeks()); activeDayIdx = keepD; }
+  else { activeDayIdx = todayDayIdx(); autoPositionToday(); }
   await loadTemplates();
   await loadWeek(currentWeek);
   await loadPrevWeek(currentWeek);
@@ -711,9 +844,11 @@ async function cloudGet(key){
   if(!sb || !authUser) return null;
   try{
     const { data, error } = await sb.from('app_data').select('value').eq('key', key).maybeSingle();
-    if(error || !data) return null;
+    if(error){ lastCloudError = error.message || 'erro'; return null; }
+    lastCloudError = ''; lastSyncAt = Date.now();
+    if(!data) return null;
     return data.value;
-  }catch(e){ return null; }
+  }catch(e){ lastCloudError = (e && e.message) || 'erro'; return null; }
 }
 async function cloudSet(key, value){
   if(!sb || !authUser) return false;
@@ -722,8 +857,10 @@ async function cloudSet(key, value){
       { user_id: authUser.id, key, value, updated_at: new Date().toISOString() },
       { onConflict: 'user_id,key' }
     );
-    return !error;
-  }catch(e){ return false; }
+    if(error){ lastCloudError = error.message || 'erro'; return false; }
+    lastCloudError = ''; lastSyncAt = Date.now();
+    return true;
+  }catch(e){ lastCloudError = (e && e.message) || 'erro'; return false; }
 }
 
 function localKey(key){ return authUser ? ('u:'+authUser.id+':'+key) : key; }
@@ -746,13 +883,16 @@ function persistDirty(){
 }
 async function cloudSetTracked(key, value){
   if(!dirtyKeys.has(key)){ dirtyKeys.add(key); persistDirty(); }   // mark first: survives an app close mid-request
-  const ok = await cloudSet(key, value);
+  inflightCloud++; updateSyncIndicator();
+  let ok = false;
+  try{ ok = await cloudSet(key, value); } finally { inflightCloud--; }
   if(ok){ dirtyKeys.delete(key); persistDirty(); }
+  updateSyncIndicator();
   return ok;
 }
 async function flushDirty(){
   if(!authUser || flushing || dirtyKeys.size===0) return;
-  flushing = true;
+  flushing = true; updateSyncIndicator();
   try{
     for(const key of [...dirtyKeys]){
       const v = await idbGetRaw(localKey(key));
@@ -761,7 +901,7 @@ async function flushDirty(){
       if(ok) dirtyKeys.delete(key); else break;
     }
     persistDirty();
-  } finally { flushing = false; }
+  } finally { flushing = false; updateSyncIndicator(); }
 }
 
 async function kvGet(key){
@@ -818,6 +958,7 @@ async function loadPrograms(){
   programs = [{id:'default', name:'Ciclo 1', startDate:null, createdAt:Date.now(), structure:cloneStructure(DEFAULT_STRUCTURE)}];
   currentProgram = 'default';
   const raw = await kvGet('__programs__');
+  programsExisted = !!raw;
   if(raw){
     try{
       const parsed = JSON.parse(raw);
@@ -836,7 +977,7 @@ async function saveProgramsList(){
 function currentProgramMeta(){
   return programs.find(p=>p.id===currentProgram) || programs[0];
 }
-async function createProgram(name, startDate, structure){
+async function createProgram(name, startDate, structure, planKey){
   const id = 'prog_' + Date.now();
   programs.push({id, name: name || ('Ciclo ' + (programs.length+1)), startDate: startDate||null, createdAt: Date.now(), structure: normalizeStructure(structure || DEFAULT_STRUCTURE)});
   currentProgram = id;
@@ -846,6 +987,8 @@ async function createProgram(name, startDate, structure){
   activeDayIdx = 0;
   customTemplates = {};
   progSettings = defaultSettings();
+  if(planKey && planKey!=='padrao') await applyPlanTemplate(planKey);
+  autoPositionToday();
   await loadWeek(currentWeek);
   await loadPrevWeek(currentWeek);
   render();
@@ -903,7 +1046,8 @@ async function switchProgram(id){
   const meta = currentProgramMeta();
   weeksCache = null;
   currentWeek = Math.min(meta.lastWeek || 1, totalWeeks());
-  activeDayIdx = 0;
+  activeDayIdx = todayDayIdx();
+  autoPositionToday();
   await loadTemplates();
   await loadWeek(currentWeek);
   await loadPrevWeek(currentWeek);
@@ -943,15 +1087,24 @@ function migrateLog(log){
   return {sets, obs: log.obs||''};
 }
 
-async function loadPrevWeek(n){
-  if(n<=1){ prevWeekData = null; return; }
+async function loadWeekObj(n){
   try{
-    const raw = await kvGet(pk('week:'+(n-1)));
-    prevWeekData = raw ? JSON.parse(raw) : null;
-    if(prevWeekData && prevWeekData.logs){
-      Object.keys(prevWeekData.logs).forEach(id=>{ prevWeekData.logs[id] = migrateLog(prevWeekData.logs[id]); });
-    }
-  }catch(e){ prevWeekData = null; }
+    const raw = await kvGet(pk('week:'+n));
+    const o = raw ? JSON.parse(raw) : null;
+    if(o && o.logs) Object.keys(o.logs).forEach(id=>{ o.logs[id] = migrateLog(o.logs[id]); });
+    return o;
+  }catch(e){ return null; }
+}
+async function loadPrevWeek(n){
+  prevWeekData = null; baseWeekData = null; baseWeekNum = 0;
+  if(n<=1) return;
+  prevWeekData = await loadWeekObj(n-1);
+  baseWeekData = prevWeekData; baseWeekNum = n-1;
+  // a deload week is lighter than usual: use the week before it as the reference
+  if(weekInfo(n-1).isDeload && n-2>=1){
+    const r = await loadWeekObj(n-2);
+    if(r){ baseWeekData = r; baseWeekNum = n-2; }
+  }
 }
 
 async function loadTemplates(){
@@ -1385,6 +1538,126 @@ function estimateRPE(exId, carga, reps){
   return Math.round(rpe * 2) / 2;
 }
 
+function baseLogFor(exId){ return (baseWeekData && baseWeekData.logs) ? baseWeekData.logs[exId] : null; }
+function parseRepRange(str){
+  const m = String(str||'').match(/(\d+)\s*-\s*(\d+)/);
+  if(m) return {lo:+m[1], hi:+m[2]};
+  const one = String(str||'').match(/^\s*(\d+)\s*(\/.*)?$/);
+  return one ? {lo:+one[1], hi:+one[1]} : null;
+}
+function roundTo(x, step){ return Math.round(x/step)*step; }
+function fmtKg(x){ return String(Math.round(x*100)/100); }
+function suggestLoad(ex, wk, t){
+  if(!ex || ex.isTime || isMethodEx(ex)) return null;
+  const bl = baseLogFor(ex.id);
+  if(!bl || !Array.isArray(bl.sets)) return null;
+  const work = bl.sets.filter(x=>(x.tipo||'trabalho')==='trabalho' && parseFloat(x.carga)>0 && parseFloat(x.reps)>0);
+  if(!work.length) return null;
+  const L = Math.max.apply(null, work.map(x=>parseFloat(x.carga)));
+  const top = work.filter(x=>parseFloat(x.carga)===L).map(x=>parseFloat(x.reps));
+  const minTop = Math.min.apply(null, top), maxTop = Math.max.apply(null, top);
+  // only RPE typed by the user counts (auto-filled values are estimates)
+  const rpes = work.filter(x=>x.rpeAuto!==true).map(x=>parseFloat(x.rpe)).filter(v=>v>0);
+  const avgRpe = rpes.length ? rpes.reduce((a,b)=>a+b,0)/rpes.length : null;
+  const rpeTxt = avgRpe!==null ? ' (RPE médio '+(Math.round(avgRpe*10)/10)+')' : '';
+  const rr = parseRepRange(t.reps);
+  const lower = /terra|agach|leg press|stiff|pélvica|pelvica|afundo|búlgaro|bulgaro/i.test(ex.name);
+  const inc = L<20 ? 1 : (lower ? 5 : 2.5);
+  const wkTxt = 'semana '+baseWeekNum;
+  if(wk.isDeload){
+    return {carga: Math.max(0, roundTo(L*0.8, 2.5)), reps: rr ? rr.lo : '', type:'down', text:'Semana de deload: cerca de 20% menos carga que a '+wkTxt+' ('+fmtKg(L)+' kg) e sem ir à falha.'};
+  }
+  if(!rr) return {carga:L, reps:'', type:'keep', text:'Mantenha '+fmtKg(L)+' kg (referência: '+wkTxt+').'};
+  if(minTop >= rr.hi && (avgRpe===null || avgRpe<=8.5)){
+    return {carga:L+inc, reps:rr.lo, type:'up', text:'Na '+wkTxt+' você fez '+minTop+'+ reps em todas as séries com '+fmtKg(L)+' kg'+rpeTxt+'. Suba para '+fmtKg(L+inc)+' kg e comece em '+rr.lo+' reps.'};
+  }
+  if(avgRpe!==null && avgRpe>=9.5){
+    return {carga:L, reps:rr.lo, type:'keep', text:'A '+wkTxt+' ficou muito pesada'+rpeTxt+'. Repita '+fmtKg(L)+' kg com um pouco mais de folga.'};
+  }
+  if(minTop < rr.lo){
+    return {carga:L, reps:rr.lo, type:'keep', text:'Abaixo da faixa de '+rr.lo+'-'+rr.hi+' reps na '+wkTxt+'. Mantenha '+fmtKg(L)+' kg até chegar a '+rr.lo+' reps em todas as séries.'};
+  }
+  return {carga:L, reps:Math.min(rr.hi, maxTop+1), type:'keep', text:'Mantenha '+fmtKg(L)+' kg e busque 1 rep a mais por série (meta: '+rr.hi+').'};
+}
+const SUG_TAG = {up:'↑ subir', keep:'= manter', down:'↓ deload'};
+function suggestBoxHtml(ex, wk, t, sug){
+  const bl = baseLogFor(ex.id);
+  if(!bl || !Array.isArray(bl.sets) || !bl.sets.length) return '';
+  const ghost = `<div class="sug-ghost">Números em cinza nos campos = semana ${baseWeekNum}.</div>`;
+  const copyBtn = `<button type="button" data-copyprev="${ex.id}">↺ Copiar semana ${baseWeekNum}${wk.isDeload?' (−20%)':''}</button>`;
+  if(!sug) return `<div class="suggest-box keep">${ghost}<div class="sug-actions">${copyBtn}</div></div>`;
+  const repsTxt = sug.reps!=='' ? ' × '+sug.reps+' reps' : '';
+  return `<div class="suggest-box ${sug.type}">
+    <div class="sug-title">Sugestão: <strong>${fmtKg(sug.carga)} kg${repsTxt}</strong> <span class="sug-tag">${SUG_TAG[sug.type]}</span></div>
+    <div class="sug-text">${esc(sug.text)}</div>
+    ${ghost}
+    <div class="sug-actions"><button type="button" data-usesug="${ex.id}">Usar sugestão</button>${copyBtn}</div>
+  </div>`;
+}
+function ensureLog(exId){
+  if(!weekData.logs[exId]) weekData.logs[exId] = {sets:[], obs:''};
+  if(!Array.isArray(weekData.logs[exId].sets)) weekData.logs[exId].sets = [];
+  return weekData.logs[exId];
+}
+function useSuggestion(ex, wk){
+  const t = targetFor(ex, wk);
+  const sug = suggestLoad(ex, wk, t);
+  if(!sug) return false;
+  const log = ensureLog(ex.id);
+  let work = log.sets.filter(x=>x.tipo!=='aquecimento');
+  while(work.length < t.sets){ addSetTo(ex.id); work = log.sets.filter(x=>x.tipo!=='aquecimento'); }
+  work.forEach(x=>{
+    if(!x.carga) x.carga = String(sug.carga);
+    if(!x.reps && sug.reps!=='') x.reps = String(sug.reps);
+  });
+  expandedEx[ex.id] = true;
+  return true;
+}
+function prefillFromBase(ex, wk){
+  const bl = baseLogFor(ex.id);
+  if(!bl || !Array.isArray(bl.sets) || !bl.sets.length) return false;
+  const t = targetFor(ex, wk);
+  const log = ensureLog(ex.id);
+  const factor = wk.isDeload ? 0.8 : 1;
+  const adj = c => { const v = parseFloat(c); if(!(v>0)) return (c==null?'':String(c)); return String(factor===1 ? v : Math.max(0, roundTo(v*factor, 2.5))); };
+  let workSeen = 0;
+  const src = bl.sets.filter(x=>{
+    if((x.tipo||'trabalho')==='aquecimento') return true;
+    workSeen++; return workSeen <= t.sets;
+  });
+  let changed = false;
+  src.forEach((bs, k)=>{
+    const isWork = (bs.tipo||'trabalho')!=='aquecimento';
+    let cur = log.sets[k];
+    if(!cur){
+      cur = {tipo: bs.tipo||'trabalho'};
+      if(Array.isArray(bs.parts)) cur.parts = bs.parts.map(()=>({carga:'', reps:''})); else { cur.carga=''; cur.reps=''; }
+      if(isWork && !ex.isTime){ cur.rpe = String(phaseRPE(wk)); cur.rpeAuto = true; }
+      log.sets.push(cur); changed = true;
+    }
+    if(Array.isArray(bs.parts)){
+      if(!Array.isArray(cur.parts)) cur.parts = [];
+      bs.parts.forEach((bp,pi)=>{
+        if(!cur.parts[pi]) cur.parts[pi] = {carga:'', reps:''};
+        if(!cur.parts[pi].carga && bp && bp.carga){ cur.parts[pi].carga = adj(bp.carga); changed = true; }
+        if(!cur.parts[pi].reps && bp && bp.reps){ cur.parts[pi].reps = String(bp.reps); changed = true; }
+      });
+    } else {
+      if(!cur.carga && bs.carga){ cur.carga = ex.isTime ? String(bs.carga) : adj(bs.carga); changed = true; }
+      if(!cur.reps && bs.reps){ cur.reps = String(bs.reps); changed = true; }
+    }
+  });
+  if(changed) expandedEx[ex.id] = true;
+  return changed;
+}
+function dayHasBase(day, wk){
+  return getDayExercises(day, wk).some(ex=>{ const bl = baseLogFor(ex.id); return bl && Array.isArray(bl.sets) && bl.sets.length>0; });
+}
+function renderPrefillDayBtn(day, wk){
+  if(!baseWeekData || !dayHasBase(day, wk)) return '';
+  return `<button type="button" class="prefill-day-btn" id="prefill-day-btn">↺ Preencher o dia com a semana ${baseWeekNum}${wk.isDeload ? ' (−20% de carga)' : ''}</button>`;
+}
+
 function addSetTo(exId){
   if(!weekData.logs[exId]) weekData.logs[exId] = {sets:[], obs:''};
   const log = weekData.logs[exId];
@@ -1516,6 +1789,7 @@ function render(){
     ${renderTopControls()}
     ${showProgramPanel ? renderProgramPanel() : ''}
     ${showAuthPanel ? renderAuthPanel() : ''}
+    ${showOnboarding ? renderOnboarding() : ''}
     ${renderDayReminder(wk)}
     ${renderHero(wk)}
     ${renderTabs()}
@@ -1531,6 +1805,50 @@ function render(){
   if(pendingUndo) renderUndoToast();
 }
 
+function syncStatus(){
+  if(!authUser) return {k:'local', text:'Só neste aparelho · toque no 🔒 para sincronizar'};
+  const online = (typeof navigator==='undefined') || navigator.onLine!==false;
+  const n = dirtyKeys.size;
+  if(inflightCloud>0 || flushing) return {k:'syncing', text:'Sincronizando…'};
+  if(n>0){
+    if(!online) return {k:'offline', text:'Sem conexão · '+n+' alteraç'+(n>1?'ões':'ão')+' a enviar'};
+    if(lastCloudError) return {k:'error', text:'Falha ao sincronizar · toque para tentar de novo'};
+    return {k:'pending', text:'Pendente · '+n+' alteraç'+(n>1?'ões':'ão')+' a enviar'};
+  }
+  if(!online) return {k:'offline', text:'Sem conexão · usando dados deste aparelho'};
+  const t = lastSyncAt ? new Date(lastSyncAt) : null;
+  return {k:'ok', text:'Sincronizado' + (t ? ' · '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0') : '')};
+}
+function renderSyncRow(){
+  const st = syncStatus();
+  return `<div class="sync-row ${st.k}" id="sync-row" role="button" tabindex="0" title="Toque para sincronizar agora"><span class="sync-dot"></span><span id="sync-text">${esc(st.text)}</span></div>`;
+}
+function updateSyncIndicator(){
+  const row = document.getElementById('sync-row');
+  if(!row) return;
+  const st = syncStatus();
+  row.className = 'sync-row ' + st.k;
+  const tx = document.getElementById('sync-text');
+  if(tx) tx.textContent = st.text;
+}
+
+function renderOnboarding(){
+  return `<div class="onboard">
+    <h3>Bem-vindo! Como você quer começar?</h3>
+    <div class="adv-hint">Escolha um ponto de partida. Dá para editar tudo depois: exercícios, dias, fases e semanas.</div>
+    <label class="lbl">Plano de treinos</label>
+    <select id="ob-plan">${Object.keys(PLAN_TEMPLATES).map(k=>`<option value="${k}">${PLAN_TEMPLATES[k].label}</option>`).join('')}</select>
+    <label class="lbl">Estrutura do ciclo</label>
+    <select id="ob-struct">${Object.keys(STRUCT_PRESETS).map(k=>`<option value="${k}">${STRUCT_PRESETS[k].label}</option>`).join('')}</select>
+    <label class="lbl">Data de início (opcional — o app abre na semana e no dia certos)</label>
+    <input type="date" id="ob-date">
+    <div style="display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap;">
+      <button class="add-ex-btn" id="ob-start" style="padding:10px 16px;">Começar</button>
+      <button type="button" class="link-btn" id="ob-skip">Pular e usar o plano original</button>
+    </div>
+  </div>`;
+}
+
 function renderTopControls(){
   const meta = currentProgramMeta();
   return `<div class="top-controls">
@@ -1539,7 +1857,7 @@ function renderTopControls(){
       <button class="icon-btn" id="auth-toggle-btn" title="${authUser?'Sincronizado':'Entrar / sincronizar'}">${authUser?'☁️':'🔒'}</button>
       <button class="icon-btn" id="theme-toggle-btn" title="Alternar tema">${theme==='dark'?'☀️':'🌙'}</button>
     </div>
-  </div>`;
+  </div>${renderSyncRow()}`;
 }
 
 function renderAuthPanel(){
@@ -1707,6 +2025,7 @@ function renderProgramPanel(){
       <input type="text" id="new-prog-name" placeholder="Nome do novo ciclo (ex: Ciclo 2)">
       <input type="date" id="new-prog-date" title="Data de início (opcional)">
       <select id="new-prog-preset">${Object.keys(STRUCT_PRESETS).map(k=>`<option value="${k}">${STRUCT_PRESETS[k].label}</option>`).join('')}</select>
+      <select id="new-prog-plan">${Object.keys(PLAN_TEMPLATES).map(k=>`<option value="${k}">Plano: ${PLAN_TEMPLATES[k].label}</option>`).join('')}</select>
       <button class="add-ex-btn" id="new-prog-btn">+ Criar ciclo</button>
     </div>
   </div>`;
@@ -1718,17 +2037,28 @@ function todayDayIdx(){
 }
 
 function renderDayReminder(wk){
-  const idx = todayDayIdx();
-  const day = DAY_TEMPLATES[idx];
   const todayKey = new Date().toDateString();
   if(dismissedReminderKey===todayKey) return '';
-  if(idx===activeDayIdx && activeTab==='sprint') return '';
+  const tp = todayPosition();
+  const dismissBtn = '<button class="dismiss" id="dismiss-reminder-btn" title="Dispensar por hoje">✕</button>';
+  if(tp && tp.week < 1){
+    const sd = parseISODate(currentProgramMeta().startDate);
+    const days = Math.max(1, Math.round((sd - startOfToday())/86400000));
+    return `<div class="day-reminder"><span>Seu ciclo começa em <strong>${fmtDM(sd)}</strong> (${days} dia${days>1?'s':''}).</span><div style="display:flex;gap:8px;align-items:center;">${dismissBtn}</div></div>`;
+  }
+  if(tp && tp.week > totalWeeks()){
+    return `<div class="day-reminder"><span>Este ciclo já terminou. Crie um novo ciclo ou ajuste as datas.</span><div style="display:flex;gap:8px;align-items:center;"><button data-open-programs="1">Abrir ciclos</button>${dismissBtn}</div></div>`;
+  }
+  const idx = tp ? tp.dayIdx : todayDayIdx();
+  const day = DAY_TEMPLATES[idx];
+  const onToday = tp ? (wk.n===tp.week && activeDayIdx===idx && activeTab==='sprint') : (idx===activeDayIdx && activeTab==='sprint');
+  if(onToday) return '';
   const rest = isRestDay(day);
   return `<div class="day-reminder">
     <span>${rest ? 'Hoje é <strong>dia de descanso</strong> — aproveite para recuperar.' : 'Hoje é dia de <strong>'+day.label+'</strong> — '+esc(dayFocus(day))}</span>
     <div style="display:flex;gap:8px;align-items:center;">
       <button data-goto-today="${idx}">${rest ? 'Abrir o dia' : 'Ver treino de hoje'}</button>
-      <button class="dismiss" id="dismiss-reminder-btn" title="Dispensar por hoje">✕</button>
+      ${dismissBtn}
     </div>
   </div>`;
 }
@@ -1739,9 +2069,10 @@ function renderHero(wk){
     <div class="hero-top">
       <div>
         <div class="hero-week num">S<span>emana</span> ${wk.n}<span> / ${totalWeeks()}</span></div>
-        <div class="hero-meso">${wk.meso.label} <span class="phase-pill ${phaseClass(wk)}">${phaseLabel(wk)}</span></div>
+        <div class="hero-meso">${wk.meso.label} <span class="phase-pill ${phaseClass(wk)}">${phaseLabel(wk)}</span>${weekRangeText(wk.n) ? '<span class="week-range">'+weekRangeText(wk.n)+'</span>' : ''}</div>
       </div>
       <div class="week-nav">
+        ${(()=>{ const tp = todayPosition(); return (tp && tp.week>=1 && tp.week<=totalWeeks()) ? '<button id="today-btn" title="Ir para hoje">Hoje</button>' : ''; })()}
         <button id="prev-week" ${wk.n<=1?'disabled':''}>‹</button>
         <button id="next-week" ${wk.n>=totalWeeks()?'disabled':''}>›</button>
       </div>
@@ -1769,6 +2100,37 @@ function renderTabs(){
   return `<div class="tabs">${tabs.map(([k,l])=>`<button class="tab ${activeTab===k?'active':''}" data-tab="${k}">${l}</button>`).join('')}</div>`;
 }
 
+function dayHasLog(day, wk){
+  const hasVal = st => !!(st && (st.carga || st.reps || (Array.isArray(st.parts) && st.parts.some(q=>q && (q.carga || q.reps)))));
+  for(const ex of getDayExercises(day, wk)){
+    const l = weekData.logs[ex.id];
+    if(l && Array.isArray(l.sets) && l.sets.some(hasVal)) return true;
+  }
+  const cd = effectiveCardio(day);
+  if(cd){ const cl = weekData.cardio[cd.id]; if(cl && (cl.km || cl.tempo || cl.feito || cl.sensacao)) return true; }
+  return false;
+}
+function dayPlanned(day, wk){ return !isRestDay(day) && (getDayExercises(day, wk).length>0 || !!effectiveCardio(day)); }
+function dayStatus(d, i, wk){
+  if(isRestDay(d)) return {cls:'', mark:'', title:'Descanso'};
+  const planned = dayPlanned(d, wk);
+  const done = planned && dayHasLog(d, wk);
+  const date = dateOfDay(wk.n, i);
+  const today = startOfToday();
+  let cls = '', mark = '', title = '';
+  if(done){ cls = 'done'; mark = '✓'; title = 'Treino registrado'; }
+  else if(planned && date && date < today){ cls = 'missed'; mark = '•'; title = 'Sem registro (dia que já passou)'; }
+  if(date && sameDay(date, today)) cls += ' today';
+  return {cls, mark, title};
+}
+function weekSummaryHtml(wk){
+  let planned = 0, done = 0;
+  DAY_TEMPLATES.forEach(d=>{ if(dayPlanned(d, wk)){ planned++; if(dayHasLog(d, wk)) done++; } });
+  if(!planned) return '';
+  const range = weekRangeText(wk.n);
+  return `<div class="week-summary">Treinos registrados: <strong>${done}/${planned}</strong>${range ? ' · '+range : ''}</div>`;
+}
+
 const SHORT_DAY = {seg:'SEG', ter:'TER', qua:'QUA', qui:'QUI', sex:'SEX', sab:'SÁB', dom:'DOM'};
 
 function renderSprint(wk){
@@ -1779,17 +2141,19 @@ function renderSprint(wk){
   const notesMap = weekData.dayNotes || {};
   return `
   <div class="day-strip">
-    ${DAY_TEMPLATES.map((d,i)=>`<div class="day-chip ${i===activeDayIdx?'active':''} ${isRestDay(d)?'rest':''}" data-day="${i}">
-        <div class="dlabel"><span class="dfull">${d.label}</span><span class="dshort">${SHORT_DAY[d.key]}</span>${(notesMap[d.key]&&String(notesMap[d.key]).trim())?'<span class="note-dot" title="Tem observações">✎</span>':''}</div>
+    ${DAY_TEMPLATES.map((d,i)=>{ const st = dayStatus(d,i,wk); return `<div class="day-chip ${i===activeDayIdx?'active':''} ${isRestDay(d)?'rest':''} ${st.cls}" data-day="${i}">
+        <div class="dlabel"><span class="dfull">${d.label}</span><span class="dshort">${SHORT_DAY[d.key]}</span>${st.mark ? `<span class="dstat" title="${st.title}">${st.mark}</span>` : ''}${(notesMap[d.key]&&String(notesMap[d.key]).trim())?'<span class="note-dot" title="Tem observações">✎</span>':''}</div>
         <div class="dfocus">${isRestDay(d) ? 'Descanso' : esc(dayFocus(d))}</div>
-      </div>`).join('')}
+      </div>`; }).join('')}
   </div>
+  ${weekSummaryHtml(wk)}
   <div class="panel">
     <div class="panel-head">
       <div><h2>${day.label} — ${rest ? 'Descanso' : esc(dayFocus(day))}</h2></div>
       <button class="edit-toggle-btn ${editingDay?'on':''}" id="toggle-edit-btn">${editingDay?'Concluir edição':'Editar treino'}</button>
     </div>
     ${editingDay ? renderExerciseEdit(day) : (rest ? renderRestDay(day, wk) : `
+      ${renderPrefillDayBtn(day, wk)}
       ${renderVolumeDropdown(day, wk)}
       ${renderExerciseTable(day, wk)}
       ${cardio ? renderCardio(cardio, wk, day.key) : ''}
@@ -1849,6 +2213,17 @@ function deltaBadgeHtml(ex, wk, curE1){
 
 const SET_TYPE_LABEL = {trabalho:'Trab.', aquecimento:'Aquec.', drop:'Drop'};
 
+function ghostVal(ex, i, field, fallback, pi){
+  const bl = baseLogFor(ex.id);
+  const bs = (bl && Array.isArray(bl.sets)) ? bl.sets[i] : null;
+  let v = null;
+  if(bs){
+    if(pi!==undefined && pi!==null){ const q = Array.isArray(bs.parts) ? bs.parts[pi] : null; v = q ? q[field] : null; }
+    else v = bs[field];
+  }
+  return (v!==null && v!==undefined && v!=='') ? String(v) : fallback;
+}
+
 function stepperHtml(field, step, exId, i, pi, val, ph, mode){
   const pa = (pi===null) ? '' : ` data-partidx="${pi}"`;
   const ps = (pi===null) ? '' : ':'+pi;
@@ -1872,17 +2247,17 @@ function renderSetRow(ex, s, i){
     const body = ex.parts.map((pname,pi)=>{
       const p = sp[pi] || {};
       return `<div class="part-block"><div class="part-label">${pi+1}. ${esc(pname)}</div>
-        <div class="set-row-bottom">${stepperHtml('carga',2.5,ex.id,i,pi,p.carga,'kg','decimal')}${stepperHtml('reps',1,ex.id,i,pi,p.reps,'reps','numeric')}</div></div>`;
+        <div class="set-row-bottom">${stepperHtml('carga',2.5,ex.id,i,pi,p.carga,ghostVal(ex,i,'carga','kg',pi),'decimal')}${stepperHtml('reps',1,ex.id,i,pi,p.reps,ghostVal(ex,i,'reps','reps',pi),'numeric')}</div></div>`;
     }).join('');
     return `<div class="set-row">${head}${body}<div class="set-row-bottom">${rpeInput}</div></div>`;
   }
   if(ex.isTime){
     return `<div class="set-row">${head}<div class="set-row-bottom">
-      <input type="text" class="plain" placeholder="tempo" value="${esc(s.carga||'')}" data-setfield="carga" data-setex="${ex.id}" data-setidx="${i}">
-      <input type="text" inputmode="numeric" class="plain" placeholder="reps" value="${esc(s.reps||'')}" data-setfield="reps" data-setex="${ex.id}" data-setidx="${i}">
+      <input type="text" class="plain" placeholder="${esc(ghostVal(ex,i,'carga','tempo'))}" value="${esc(s.carga||'')}" data-setfield="carga" data-setex="${ex.id}" data-setidx="${i}">
+      <input type="text" inputmode="numeric" class="plain" placeholder="${esc(ghostVal(ex,i,'reps','reps'))}" value="${esc(s.reps||'')}" data-setfield="reps" data-setex="${ex.id}" data-setidx="${i}">
     </div></div>`;
   }
-  return `<div class="set-row">${head}<div class="set-row-bottom">${stepperHtml('carga',2.5,ex.id,i,null,s.carga,'kg','decimal')}${stepperHtml('reps',1,ex.id,i,null,s.reps,'reps','numeric')}${rpeInput}</div></div>`;
+  return `<div class="set-row">${head}<div class="set-row-bottom">${stepperHtml('carga',2.5,ex.id,i,null,s.carga,ghostVal(ex,i,'carga','kg'),'decimal')}${stepperHtml('reps',1,ex.id,i,null,s.reps,ghostVal(ex,i,'reps','reps'),'numeric')}${rpeInput}</div></div>`;
 }
 
 function renderExerciseTable(day, wk){
@@ -1903,6 +2278,9 @@ function renderExerciseTable(day, wk){
     const chip = summaryChipFor(log);
     const expanded = !!expandedEx[ex.id];
     const delta = deltaBadgeHtml(ex, wk, curE1);
+    const sug = (!isM && !ex.isTime) ? suggestLoad(ex, wk, t) : null;
+    const hasWork = log.sets.some(x=>(x.tipo||'trabalho')!=='aquecimento' && (x.carga || x.reps));
+    const sugBadge = (sug && !hasWork) ? `<span class="sug-badge ${sug.type}">sug. ${fmtKg(sug.carga)} kg</span>` : '';
     const setsHtml = log.sets.map((st,i)=>renderSetRow(ex, st, i)).join('');
     const badge = isM ? `<span class="method-badge">${METHODS[ex.method].label}</span>` : '';
     const mhint = isM ? `${METHODS[ex.method].hint} · ` : '';
@@ -1914,11 +2292,13 @@ function renderExerciseTable(day, wk){
             <div class="ex-target-inline">${t.sets}× ${esc(t.reps)}</div>
             <div class="ex-summary-chip" id="chip-${ex.id}">${chip}</div>
             ${delta}
+            ${sugBadge}
           </div>
           <span class="chevron">${expanded?'▴':'▾'}</span>
         </div>
         <div class="ex-card-body" style="display:${expanded?'block':'none'}">
           <div class="ex-note-line">${mhint}${t.note}${prevTxt?' · '+prevTxt:''}</div>
+          ${suggestBoxHtml(ex, wk, t, sug)}
           ${setsHtml}
           <button type="button" class="add-set-btn" data-addset="${ex.id}">+ Adicionar série</button>
           ${log.sets.length>0 ? `<button type="button" class="add-set-btn" data-dupset="${ex.id}">⧉ Duplicar última</button>` : ''}
@@ -2793,7 +3173,8 @@ function attachEvents(wk){
     const date = document.getElementById('new-prog-date').value;
     const presetKey = document.getElementById('new-prog-preset') ? document.getElementById('new-prog-preset').value : 'padrao';
     showProgramPanel = false;
-    createProgram(name, date || null, cloneStructure(STRUCT_PRESETS[presetKey] || STRUCT_PRESETS.padrao));
+    const planKey = document.getElementById('new-prog-plan') ? document.getElementById('new-prog-plan').value : 'padrao';
+    createProgram(name, date || null, cloneStructure(STRUCT_PRESETS[presetKey] || STRUCT_PRESETS.padrao), planKey);
   });
   document.querySelectorAll('[data-progedit]').forEach(b=>{
     b.addEventListener('click', ()=>{ editingProgramId = (editingProgramId===b.dataset.progedit) ? null : b.dataset.progedit; render(); });
@@ -2850,8 +3231,10 @@ function attachEvents(wk){
   });
   document.querySelectorAll('[data-goto-today]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      activeDayIdx = parseInt(btn.dataset.gotoToday);
       activeTab = 'sprint';
+      const tp = todayPosition();
+      if(tp && tp.week>=1 && tp.week<=totalWeeks()){ goWeek(tp.week, tp.dayIdx); return; }
+      activeDayIdx = parseInt(btn.dataset.gotoToday);
       editingDay = false;
       expandedEx = {};
       render();
@@ -2876,26 +3259,77 @@ function attachEvents(wk){
     weekData.dayNotes[day.key] = e.target.value;
     scheduleSave();
   });
+  document.getElementById('today-btn')?.addEventListener('click', ()=>{
+    const tp = todayPosition();
+    if(tp && tp.week>=1 && tp.week<=totalWeeks()){ activeTab = 'sprint'; goWeek(tp.week, tp.dayIdx); }
+  });
+  document.querySelectorAll('[data-open-programs]').forEach(b=>{ b.addEventListener('click', ()=>{ showProgramPanel = true; render(); }); });
+  document.querySelectorAll('[data-usesug]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const ex = findExercise(b.dataset.usesug);
+      if(ex && useSuggestion(ex, weekInfo(currentWeek))){ scheduleSave(); render(); }
+    });
+  });
+  document.querySelectorAll('[data-copyprev]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const ex = findExercise(b.dataset.copyprev);
+      if(ex && prefillFromBase(ex, weekInfo(currentWeek))){ scheduleSave(); render(); }
+    });
+  });
+  document.getElementById('prefill-day-btn')?.addEventListener('click', ()=>{
+    const wk2 = weekInfo(currentWeek);
+    let any = false;
+    getDayExercises(DAY_TEMPLATES[activeDayIdx], wk2).forEach(ex=>{ if(prefillFromBase(ex, wk2)) any = true; });
+    if(any){ scheduleSave(); render(); }
+  });
+  document.getElementById('sync-row')?.addEventListener('click', async ()=>{
+    if(!authUser){ showAuthPanel = true; render(); return; }
+    lastCloudError = '';
+    await flushDirty();
+    await reloadAllAndRender(true);
+  });
+  document.getElementById('ob-start')?.addEventListener('click', async ()=>{
+    const plan = document.getElementById('ob-plan').value;
+    const st = document.getElementById('ob-struct').value;
+    const date = document.getElementById('ob-date').value || null;
+    const pg = currentProgramMeta();
+    pg.structure = normalizeStructure(cloneStructure(STRUCT_PRESETS[st] || STRUCT_PRESETS.padrao));
+    pg.startDate = date;
+    await applyPlanTemplate(plan);
+    showOnboarding = false; programsExisted = true; weeksCache = null;
+    await saveProgramsList();
+    currentWeek = 1; activeDayIdx = todayDayIdx();
+    autoPositionToday();
+    await loadWeek(currentWeek);
+    await loadPrevWeek(currentWeek);
+    await saveMeta();
+    render();
+  });
+  document.getElementById('ob-skip')?.addEventListener('click', async ()=>{
+    showOnboarding = false; programsExisted = true;
+    await saveProgramsList();
+    render();
+  });
   document.getElementById('retro-text')?.addEventListener('input', (e)=>{
     weekData.retro = e.target.value;
     scheduleSave();
   });
 }
 
-async function goWeek(n){
+async function goWeek(n, dayIdx){
   if(n<1) return;
   if(n>totalWeeks()){
     const wantsNew = confirm('Você concluiu as '+totalWeeks()+' semanas deste ciclo! Quer iniciar um novo ciclo com a mesma estrutura?');
     if(wantsNew){
       const name = prompt('Nome do novo ciclo:', 'Ciclo ' + (programs.length+1)) || ('Ciclo ' + (programs.length+1));
-      await createProgram(name, null, cloneStructure(currentProgramMeta().structure));
+      await createProgram(name, null, cloneStructure(currentProgramMeta().structure), 'padrao');
     }
     return;
   }
   clearTimeout(saveTimer);
   await saveWeek();
   currentWeek = n;
-  activeDayIdx = 0;
+  if(dayIdx!==undefined) activeDayIdx = dayIdx;
   editingDay = false;
   expandedEx = {};
   await saveMeta();
@@ -2930,13 +3364,17 @@ if('serviceWorker' in navigator){
   await initAuth();
   await loadDirty();
   await loadPrograms();
+  await detectFirstRun();
   await loadMeta();
+  activeDayIdx = todayDayIdx();
+  autoPositionToday();
   await loadTemplates();
   await loadWeek(currentWeek);
   await loadPrevWeek(currentWeek);
   render();
   flushDirty();
-  window.addEventListener('online', ()=>{ flushDirty(); });
+  window.addEventListener('offline', ()=>{ updateSyncIndicator(); });
+  window.addEventListener('online', ()=>{ updateSyncIndicator(); flushDirty(); });
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') flushDirty(); });
 })();
 </script>
